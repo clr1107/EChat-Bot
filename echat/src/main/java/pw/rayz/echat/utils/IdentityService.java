@@ -4,6 +4,11 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * A simple singleton designed to generate random longs for IDs. Rather
+ * than using an entire {@link UUID}, simply split it in half, so it
+ * can be stored in two {@code long} types.
+ */
 public class IdentityService {
     private static final IdentityService service = new IdentityService();
     private final Queue<Long> queue = new ConcurrentLinkedQueue<>();
@@ -15,6 +20,10 @@ public class IdentityService {
         return service;
     }
 
+    /**
+     * Generate a new {@link UUID} and {@link Queue#offer(Object)} both halfs
+     * to the {@link Queue}.
+     */
     private void newUUID() {
         UUID uuid = UUID.randomUUID();
 
@@ -22,6 +31,12 @@ public class IdentityService {
         queue.offer(uuid.getMostSignificantBits());
     }
 
+    /**
+     * Take one {@code long} from the Queue if it's available. If not, then
+     * call {@link this#newUUID()} to add two more {@code long} types to the queue.
+     *
+     * @return {@code long} random id.
+     */
     public long nextId() {
         Long id;
 

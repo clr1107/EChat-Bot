@@ -7,6 +7,10 @@ import pw.rayz.echat.EChat;
 import java.time.OffsetDateTime;
 import java.util.logging.Logger;
 
+/**
+ * A class representing content identified as 'Questionable' and to be sent in
+ * the channel as it's hilariously stupid.
+ */
 public class QuestionableContent {
     private final EChat eChat = EChat.eChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");

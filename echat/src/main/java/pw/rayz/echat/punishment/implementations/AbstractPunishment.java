@@ -32,7 +32,7 @@ public abstract class AbstractPunishment implements Punishment {
                 .setThumbnail(iconURL)
                 .setColor(Color.RED)
                 .setAuthor("EChat Infraction")
-                .setFooter("Contact a staff member if you believe this to be invalid")
+                .setFooter("Contact a staff member if you believe this to be invalid, id: " + id)
                 .setTimestamp(Instant.now());
     }
 

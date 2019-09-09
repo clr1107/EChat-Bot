@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public final class Configuration {
+    public static final String DELIMITER = "\\.";
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private final File file;
     private final Gson gson = new Gson();
@@ -65,7 +66,7 @@ public final class Configuration {
     }
 
     public Object get(String key, Object def, boolean create) {
-        String[] parts = key.split("\\.");
+        String[] parts = key.split(DELIMITER);
 
         Map currentMap = fields;
         for (int i = 0; i < parts.length - 1; i++) {
