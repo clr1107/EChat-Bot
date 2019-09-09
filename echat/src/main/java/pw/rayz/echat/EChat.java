@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class EChat {
+    public static final String COMMAND_PREFIX = "::";
     private static EChat instance = new EChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private ExecutorService executorService;
@@ -21,16 +22,15 @@ public class EChat {
 
     public static void main(String[] args) {
         instance.load();
-
-        if (instance.bot.awaitReady())
-            instance.logger.info("Connected to E-Chat server.");
-        else instance.stop();
+        instance.logger.info("Connected to E-Chat server.");
 
         // Yes, it's hacky, but temporary ;)
         Scanner scanner = new Scanner(System.in);
         for (String next = ""; instance.running; next = scanner.next()) {
             if (next.equals("stop"))
                 instance.stop();
+            else if (next.equals("reload"))
+                instance.config.load();
             else instance.logger.info("Unknown command supplied, only command is \"stop\"");
         }
     }

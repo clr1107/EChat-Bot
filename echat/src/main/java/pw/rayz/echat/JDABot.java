@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
+import pw.rayz.echat.limits.BannedWordListener;
 import pw.rayz.echat.limits.SelfieChannelListener;
 
 import javax.security.auth.login.LoginException;
@@ -21,6 +22,7 @@ public class JDABot {
 
     private void loadListeners() {
         addListener(new SelfieChannelListener());
+        addListener(new BannedWordListener());
     }
 
     private JDA loadJDA(String token) {
@@ -30,7 +32,9 @@ public class JDABot {
             jda = new JDABuilder(token)
                     .setAutoReconnect(true)
                     .build();
-        } catch (LoginException exception) {
+
+            jda.awaitReady();
+        } catch (LoginException | InterruptedException exception) {
             exception.printStackTrace();
         }
 

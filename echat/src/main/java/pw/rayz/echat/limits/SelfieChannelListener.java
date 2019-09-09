@@ -38,7 +38,7 @@ public class SelfieChannelListener extends ListenerAdapter {
         MessageChannel channel = event.getMessage().getChannel();
         Member member = event.getMember();
 
-        if (selfieChannels.contains(channel.getId()) && member != null) {
+        if (member != null && selfieChannels.contains(channel.getId())) {
             logger.info(member.getUser().getName() + " Talking in selfie channel");
 
             new IllegalChannelChatInfraction(channel).send(member);

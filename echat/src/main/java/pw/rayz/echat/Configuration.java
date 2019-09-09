@@ -49,6 +49,7 @@ public final class Configuration {
             fields = gson.fromJson(bufferedReader, type);
 
             loadTasks.forEach(Runnable::run); // run all the tasks.
+            logger.info("Loaded the configuration from disk");
         } catch (FileNotFoundException exception) {
             exception.printStackTrace();
             logger.severe("Could not find configuration file.");
