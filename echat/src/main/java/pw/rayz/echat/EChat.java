@@ -13,7 +13,7 @@ public class EChat {
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private ExecutorService executorService;
     private Configuration config;
-    private JDABot jda;
+    private JDABot bot;
     private boolean running = false;
 
     private EChat() {
@@ -22,7 +22,7 @@ public class EChat {
     public static void main(String[] args) {
         instance.load();
 
-        if (instance.jda.awaitReady())
+        if (instance.bot.awaitReady())
             instance.logger.info("Connected to E-Chat server.");
         else instance.stop();
 
@@ -38,28 +38,19 @@ public class EChat {
     private void load() {
         this.running = true;
 
-        this.logger.setUseParentHandlers(false); // remove timestamp line.
         this.executorService = Executors.newFixedThreadPool(4);
         this.config = new Configuration("config.json");
-        this.jda = new JDABot();
+        this.bot = new JDABot();
     }
 
     public void stop() {
         logger.info("Stopping EChat bot...");
 
-        jda.getJDA().shutdown();
+        bot.getJDA().shutdown();
         executorService.shutdown();
 
         logger.info("Stopped.");
         System.exit(0);
-    }
-
-    public Configuration getConfig() {
-        return config;
-    }
-
-    public Logger getLogger() {
-        return logger;
     }
 
     public File getFolder() {
@@ -74,6 +65,22 @@ public class EChat {
         }
 
         return file;
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    public Configuration getConfig() {
+        return config;
+    }
+
+    public JDABot getBot() {
+        return bot;
     }
 
     public boolean isRunning() {

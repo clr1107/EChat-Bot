@@ -63,48 +63,73 @@ public final class Configuration {
         loadTasks.remove(runnable);
     }
 
-    public Object get(String key, Object def) {
-        System.out.println(fields.toString());
-        return fields != null ? fields.getOrDefault(key, def) : def;
+    public Object get(String key, Object def, boolean create) {
+        String[] parts = key.split("\\.");
+
+        Map currentMap = fields;
+        for (int i = 0; i < parts.length - 1; i++) {
+            String part = parts[i];
+            Object nextO = currentMap.get(part);
+
+            if (nextO instanceof Map) {
+                currentMap = (Map) nextO;
+            } else if (nextO == null) {
+                if (create)
+                    currentMap.put(part, new ConcurrentHashMap<String, Object>());
+                else return def;
+            } else return def;
+        }
+
+        String finalPart = parts[parts.length - 1];
+        Object finalO = currentMap.get(finalPart);
+
+        if (finalO == null) {
+            if (create) {
+                finalO = new ConcurrentHashMap<String, Object>();
+                currentMap.put(finalPart, finalO);
+            } else return def;
+        }
+
+        return finalO;
     }
 
-    public Object get(String key) {
-        return get(key, null);
+    public Object get(String key, boolean create) {
+        return get(key, null, create);
     }
 
-    public <T> T getField(String key, T def, Class<T> type) {
-        Object o = get(key);
+    public <T> T getField(String key, T def, Class<T> type, boolean create) {
+        Object o = get(key, def, create);
 
-        if (type.isInstance(o))
+        if (type.isInstance(o)) {
             return type.cast(o);
-        else return def;
+        } else return def;
     }
 
-    public <T> T getField(String key, Class<T> type) {
-        return getField(key, null, type);
+    public <T> T getField(String key, Class<T> type, boolean create) {
+        return getField(key, null, type, create);
     }
 
-    public String getString(String key) {
-        return getField(key, String.class);
+    public String getString(String key, boolean create) {
+        return getField(key, String.class, create);
     }
 
-    public String getString(String key, String def) {
-        return getField(key, def, String.class);
+    public String getString(String key, String def, boolean create) {
+        return getField(key, def, String.class, create);
     }
 
-    public Integer getInteger(String key, int def) {
-        return getField(key, def, Integer.class);
+    public Integer getInteger(String key, int def, boolean create) {
+        return getField(key, def, Integer.class, create);
     }
 
-    public Integer getInteger(String key) {
-        return getField(key, Integer.class);
+    public Integer getInteger(String key, boolean create) {
+        return getField(key, Integer.class, create);
     }
 
-    public Boolean getBoolean(String key, boolean def) {
-        return getField(key, def, Boolean.class);
+    public Boolean getBoolean(String key, boolean def, boolean create) {
+        return getField(key, def, Boolean.class, create);
     }
 
-    public Boolean getBoolean(String key) {
-        return getField(key, Boolean.class);
+    public Boolean getBoolean(String key, boolean create) {
+        return getField(key, Boolean.class, create);
     }
 }
