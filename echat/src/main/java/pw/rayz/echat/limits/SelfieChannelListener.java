@@ -16,19 +16,16 @@ import java.util.logging.Logger;
 public class SelfieChannelListener extends ListenerAdapter {
     private final EChat eChat = EChat.eChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
+    private final Configuration config = eChat.getConfig();
     private List<String> selfieChannels = new ArrayList<>();
 
     public SelfieChannelListener() {
-        loadSelfieChannels(true);
+        config.addLoadTask(this::loadSelfieChannels, true);
     }
 
-    private void loadSelfieChannels(boolean first) {
-        Configuration config = eChat.getConfig();
-
-        if (first)
-            config.addLoadTask(() -> this.loadSelfieChannels(false));
-
+    private void loadSelfieChannels() {
         List<String> list = config.getField("channels.selfies", ArrayList.class, false);
+
         if (list != null)
             selfieChannels = list;
     }

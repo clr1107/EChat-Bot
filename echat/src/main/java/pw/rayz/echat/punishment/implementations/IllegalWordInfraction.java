@@ -9,6 +9,7 @@ import pw.rayz.echat.EChat;
 import pw.rayz.echat.punishment.PunishmentType;
 
 public class IllegalWordInfraction extends AbstractPunishment {
+    private final Configuration config;
     private final MessageChannel channel;
     private final String word;
     private String message;
@@ -16,18 +17,15 @@ public class IllegalWordInfraction extends AbstractPunishment {
     public IllegalWordInfraction(@NotNull MessageChannel channel, String word) {
         super(PunishmentType.CHAT_INFRACTION);
 
+        this.config = EChat.eChat().getConfig();
         this.channel = channel;
         this.word = word;
-        this.loadMessage(true);
+
+        config.addLoadTask(this::loadMessage, true);
     }
 
-    private void loadMessage(boolean first) {
-        Configuration config = EChat.eChat().getConfig();
-
-        if (first)
-            config.addLoadTask(() -> this.loadMessage(false));
-
-        this.message = config.getString("punishments.illegal_word", false);
+    private void loadMessage() {
+        message = config.getString("punishments.illegal_word", false);
     }
 
     @NotNull

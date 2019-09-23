@@ -57,15 +57,18 @@ public final class Configuration {
         }
     }
 
-    public void addLoadTask(Runnable runnable) {
+    public void addLoadTask(Runnable runnable, boolean runNow) {
         loadTasks.add(runnable);
+
+        if (runNow)
+            runnable.run();
     }
 
     public void removeLoadTask(Runnable runnable) {
         loadTasks.remove(runnable);
     }
 
-    public Object get(String key, Object def, boolean create) {
+    private Object get(String key, Object def, boolean create) {
         String[] parts = key.split(DELIMITER);
 
         Map currentMap = fields;
@@ -119,12 +122,16 @@ public final class Configuration {
         return getField(key, def, String.class, create);
     }
 
-    public Integer getInteger(String key, int def, boolean create) {
-        return getField(key, def, Integer.class, create);
+    public Double getDouble(String key, boolean create) {
+        return getField(key, -1D, Double.class, create);
     }
 
-    public Integer getInteger(String key, boolean create) {
-        return getField(key, Integer.class, create);
+    public Double getDouble(String key, double def, boolean create) {
+        return getField(key, def, Double.class, create);
+    }
+
+    public Double getInteger(String key, boolean create) {
+        return getField(key, Double.class, create);
     }
 
     public Boolean getBoolean(String key, boolean def, boolean create) {

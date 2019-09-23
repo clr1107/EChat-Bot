@@ -17,19 +17,16 @@ import java.util.logging.Logger;
 public class BannedWordListener extends ListenerAdapter {
     private final EChat eChat = EChat.eChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
+    private final Configuration config = eChat.getConfig();
     private List<String> bannedWords = new ArrayList<>();
 
     public BannedWordListener() {
-        loadBannedWords(true);
+        config.addLoadTask(this::loadBannedWords, true);
     }
 
-    private void loadBannedWords(boolean first) {
-        Configuration config = eChat.getConfig();
-
-        if (first)
-            config.addLoadTask(() -> this.loadBannedWords(false));
-
+    private void loadBannedWords() {
         List<String> list = config.getField("banned_words", ArrayList.class, false);
+
         if (list != null)
             bannedWords = list;
     }

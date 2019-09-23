@@ -9,23 +9,21 @@ import pw.rayz.echat.EChat;
 import pw.rayz.echat.punishment.PunishmentType;
 
 public class IllegalChannelChatInfraction extends AbstractPunishment {
+    private final Configuration config;
     private final MessageChannel channel;
     private String message;
 
     public IllegalChannelChatInfraction(@NotNull MessageChannel channel) {
         super(PunishmentType.CHAT_INFRACTION);
 
+        this.config = EChat.eChat().getConfig();
         this.channel = channel;
-        this.loadMessage(true);
+
+        config.addLoadTask(this::loadMessage, true);
     }
 
-    private void loadMessage(boolean first) {
-        Configuration config = EChat.eChat().getConfig();
-
-        if (first)
-            config.addLoadTask(() -> this.loadMessage(false));
-
-        this.message = config.getString("punishments.illegal_channel", false);
+    private void loadMessage() {
+        message = config.getString("punishments.illegal_channel", false);
     }
 
     @NotNull

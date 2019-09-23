@@ -47,4 +47,12 @@ public class IdentityService {
 
         return id;
     }
+
+    public String nextHexString() {
+        return Long.toHexString(nextId());
+    }
+
+    public String nextOctalString() {
+        return Long.toOctalString(nextId());
+    }
 }
