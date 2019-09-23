@@ -3,6 +3,7 @@ package pw.rayz.echat;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
@@ -74,6 +75,13 @@ public class JDABot {
         if (user != null && guildId != -1D) {
             Guild guild = jda.getGuildById(guildId);
             return guild != null && guild.isMember(user);
+        } else return false;
+    }
+
+    public boolean isGuildChannel(GuildChannel channel) {
+        if (channel != null && guildId != -1D) {
+            Guild guild = jda.getGuildById(guildId);
+            return guild != null && channel.getGuild().getIdLong() == guildId;
         } else return false;
     }
 

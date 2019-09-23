@@ -1,15 +1,13 @@
 package pw.rayz.echat.listeners;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import pw.rayz.echat.EChat;
-import pw.rayz.echat.utils.IdentityService;
+import pw.rayz.echat.utils.EmbedBuilderTemplate;
 
 import javax.annotation.Nonnull;
-import java.awt.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,16 +26,11 @@ public class PrivateMessageListener extends ListenerAdapter {
     }
 
     private void sendResponse(User user) {
-        final String iconURL = eChat.getConfig().getString("icon", false);
-        long id = IdentityService.getService().nextId();
-
-        MessageEmbed embed = new EmbedBuilder()
-                .setThumbnail(iconURL)
-                .setColor(Color.CYAN)
-                .setAuthor("EChat Bot")
-                .setFooter("id: " + Long.toHexString(id))
-                .setTimestamp(Instant.now())
+        MessageEmbed embed = new EmbedBuilderTemplate()
+                .apply(EmbedBuilderTemplate.EmbedType.BASIC)
+                .builder()
                 .addField("Response", message, false)
+                .addField("GitHub", "https://github.com/clr1107/echat-bot", false)
                 .build();
 
         user.openPrivateChannel().queue((c) -> {
@@ -49,8 +42,8 @@ public class PrivateMessageListener extends ListenerAdapter {
     public void onPrivateMessageReceived(@Nonnull PrivateMessageReceivedEvent event) {
         User user = event.getAuthor();
 
-        if (!eChat.getBot().isInGuild(user))
-            return; // not in the echat server.
+        if (user.isBot() || !eChat.getBot().isInGuild(user))
+            return; // not in the echat server; or a bot.
 
         if (shouldSend(user))
             sendResponse(user);

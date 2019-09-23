@@ -45,9 +45,10 @@ public class IllegalWordInfraction extends AbstractPunishment {
     @Override
     public void send(@NotNull Member member) {
         MessageEmbed embed = createEmbedBuilder()
+                .addPunishmentChannel(channel.getName())
+                .builder()
                 .setTitle("*Banned Word*")
                 .setDescription(message)
-                .addField("Channel", channel.getName(), true)
                 .addField("Word", word, true)
                 .build();
 

@@ -1,7 +1,7 @@
 package pw.rayz.echat.limits;
 
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
@@ -49,10 +49,13 @@ public class BannedWordListener extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        MessageChannel channel = event.getMessage().getChannel();
+        TextChannel channel = event.getChannel();
         Member member = event.getMember();
         String message = event.getMessage().getContentRaw();
         String matchingWord;
+
+        if (!eChat.getBot().isGuildChannel(channel))
+            return;
 
         if (member != null && (matchingWord = matches(message)) != null) {
             logger.info(member.getUser().getName() + " Said banned word: " + matchingWord);

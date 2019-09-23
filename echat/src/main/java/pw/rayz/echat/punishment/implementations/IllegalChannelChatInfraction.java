@@ -39,9 +39,10 @@ public class IllegalChannelChatInfraction extends AbstractPunishment {
     @Override
     public void send(@NotNull Member member) {
         MessageEmbed embed = createEmbedBuilder()
+                .addPunishmentChannel(channel.getName())
+                .builder()
                 .setTitle("*Illegal Channel Chat*")
                 .setDescription(message)
-                .addField("Channel", channel.getName(), true)
                 .addField("Type", "Selfie", true)
                 .build();
 

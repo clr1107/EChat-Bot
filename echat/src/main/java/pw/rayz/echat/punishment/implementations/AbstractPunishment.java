@@ -1,14 +1,11 @@
 package pw.rayz.echat.punishment.implementations;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import org.jetbrains.annotations.NotNull;
 import pw.rayz.echat.EChat;
 import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.PunishmentType;
+import pw.rayz.echat.utils.EmbedBuilderTemplate;
 import pw.rayz.echat.utils.IdentityService;
-
-import java.awt.*;
-import java.time.Instant;
 
 public abstract class AbstractPunishment implements Punishment {
     protected final EChat eChat = EChat.eChat();
@@ -25,15 +22,8 @@ public abstract class AbstractPunishment implements Punishment {
         this.id = IdentityService.getService().nextId();
     }
 
-    protected EmbedBuilder createEmbedBuilder() {
-        final String iconURL = eChat.getConfig().getString("icon", false);
-
-        return new EmbedBuilder()
-                .setThumbnail(iconURL)
-                .setColor(Color.RED)
-                .setAuthor("EChat Infraction")
-                .setFooter("Contact a staff member if you believe this to be invalid, id: " + Long.toHexString(id))
-                .setTimestamp(Instant.now());
+    protected EmbedBuilderTemplate createEmbedBuilder() {
+        return new EmbedBuilderTemplate().apply(EmbedBuilderTemplate.EmbedType.PUNISHMENT);
     }
 
     @Override
