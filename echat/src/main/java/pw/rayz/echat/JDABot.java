@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rayz.echat.limits.BannedWordListener;
+import pw.rayz.echat.limits.CharacterLimitListener;
 import pw.rayz.echat.limits.SelfieChannelListener;
 import pw.rayz.echat.listeners.PrivateMessageListener;
 
@@ -39,6 +40,7 @@ public class JDABot {
         addListener(new SelfieChannelListener());
         addListener(new BannedWordListener());
         addListener(new PrivateMessageListener());
+        addListener(new CharacterLimitListener());
     }
 
     private JDA loadJDA(String token) {
