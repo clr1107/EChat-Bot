@@ -2,8 +2,9 @@ package pw.rayz.echat.punishment;
 
 import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
+import pw.rayz.echat.Auditable;
 
-public interface Punishment {
+public interface Punishment extends Auditable {
 
     /**
      * Unique ID, typically generated using {@link pw.rayz.echat.utils.IdentityService}.
@@ -26,9 +27,15 @@ public interface Punishment {
     String getMessage();
 
     /**
-     * Send this specific punishment to a {@link Member}.
-     * @param member {@link Member} to send this punishment to.
+     * Return the {@link Member} this punishment is for. May not be a member of the EChat guild!!
+     * @return {@link Member}.
      */
-    void send(Member member);
+    @NotNull
+    Member getMember();
+
+    /**
+     * Send this specific punishment to the {@link Member}.
+     */
+    void send();
 
 }

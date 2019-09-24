@@ -1,29 +1,41 @@
 package pw.rayz.echat.punishment.implementations;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
 import pw.rayz.echat.EChat;
 import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.PunishmentType;
-import pw.rayz.echat.utils.EmbedBuilderTemplate;
 import pw.rayz.echat.utils.IdentityService;
 
 public abstract class AbstractPunishment implements Punishment {
     protected final EChat eChat = EChat.eChat();
     private final PunishmentType type;
-    private final long id;
+    protected final long id;
+    protected final Member member;
 
-    public AbstractPunishment(@NotNull PunishmentType type, long id) {
+    public AbstractPunishment(@NotNull PunishmentType type, long id, @NotNull Member member) {
         this.type = type;
         this.id = id;
+        this.member = member;
     }
 
-    public AbstractPunishment(PunishmentType type) {
-        this.type = type;
-        this.id = IdentityService.getService().nextId();
+    public AbstractPunishment(@NotNull PunishmentType type, @NotNull Member member) {
+        this(type, IdentityService.getService().nextId(), member);
     }
 
-    protected EmbedBuilderTemplate createEmbedBuilder() {
-        return new EmbedBuilderTemplate().apply(EmbedBuilderTemplate.EmbedType.PUNISHMENT);
+    abstract protected EmbedBuilder prepareAuditEmbed();
+
+    @Override
+    public void sendAudit() {
+        TextChannel channel = EChat.eChat().getBot().getLogChannel();
+
+        if (channel != null) {
+            MessageEmbed embed = prepareAuditEmbed().build();
+            channel.sendMessage(embed).queue();
+        }
     }
 
     @Override
@@ -35,5 +47,10 @@ public abstract class AbstractPunishment implements Punishment {
     @Override
     public PunishmentType getType() {
         return type;
+    }
+
+    @NotNull
+    public Member getMember() {
+        return member;
     }
 }

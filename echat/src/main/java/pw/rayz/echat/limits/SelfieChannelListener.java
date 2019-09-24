@@ -1,14 +1,15 @@
 package pw.rayz.echat.limits;
 
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 import pw.rayz.echat.Configuration;
 import pw.rayz.echat.EChat;
+import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.implementations.IllegalChannelChatInfraction;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -31,14 +32,21 @@ public class SelfieChannelListener extends ListenerAdapter {
     }
 
     @Override
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        MessageChannel channel = event.getMessage().getChannel();
+    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+        TextChannel channel = event.getChannel();
         Member member = event.getMember();
+
+        if (!eChat.getBot().isGuildChannel(channel))
+            return;
 
         if (member != null && selfieChannels.contains(channel.getId())) {
             logger.info(member.getUser().getName() + " Talking in selfie channel");
 
-            new IllegalChannelChatInfraction(channel).send(member);
+            Punishment punishment = new IllegalChannelChatInfraction(channel, member);
+
+            punishment.send();
+            punishment.sendAudit();
+
             event.getMessage().delete().queue();
         }
     }

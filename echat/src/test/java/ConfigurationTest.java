@@ -51,7 +51,7 @@ public class ConfigurationTest {
         Configuration configuration = prepareConfiguration();
 
         if (configuration != null) {
-            assertEquals(configuration.getInteger("alpha", false), 5);
+            assertEquals(configuration.getInt("alpha", false), 5);
         }
     }
 

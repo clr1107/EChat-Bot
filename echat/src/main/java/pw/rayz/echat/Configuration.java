@@ -130,8 +130,20 @@ public final class Configuration {
         return getField(key, def, Double.class, create);
     }
 
-    public Double getInteger(String key, boolean create) {
-        return getField(key, Double.class, create);
+    public Integer getInt(String key, boolean create) {
+        return getInt(key, -1, create);
+    }
+
+    public Integer getInt(String key, int def, boolean create) {
+        return getDouble(key, def, create).intValue();
+    }
+
+    public Long getLong(String key, boolean create) {
+        return getLong(key, -1L, create);
+    }
+
+    public Long getLong(String key, long def, boolean create) {
+        return getDouble(key, def, create).longValue();
     }
 
     public Boolean getBoolean(String key, boolean def, boolean create) {

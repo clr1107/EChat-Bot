@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import pw.rayz.echat.Configuration;
 import pw.rayz.echat.EChat;
+import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.implementations.IllegalWordInfraction;
 
 import javax.annotation.Nonnull;
@@ -60,7 +61,11 @@ public class BannedWordListener extends ListenerAdapter {
         if (member != null && (matchingWord = matches(message)) != null) {
             logger.info(member.getUser().getName() + " Said banned word: " + matchingWord);
 
-            new IllegalWordInfraction(channel, matchingWord).send(member);
+            Punishment punishment = new IllegalWordInfraction(channel, matchingWord, member);
+
+            punishment.send();
+            punishment.sendAudit();
+
             event.getMessage().delete().queue();
         }
     }
