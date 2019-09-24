@@ -36,7 +36,7 @@ public class SpamInfraction extends AbstractPunishment {
                 .addPunishmentType(getType())
                 .builder()
                 .addField("Message", message, true)
-                .setDescription("Please wait at least a quater of a second before sending another message.")
+                .setDescription("Please do not spam")
                 .build();
 
         member.getUser().openPrivateChannel().queue((c) -> {
@@ -46,13 +46,6 @@ public class SpamInfraction extends AbstractPunishment {
 
     @Override
     protected EmbedBuilder prepareAuditEmbed() {
-        return new EmbedBuilderTemplate(id)
-                .apply(EmbedBuilderTemplate.EmbedType.PUNISHMENT_AUDIT)
-                .addPunishmentChannel(channel.getName())
-                .addPunishmentType(getType())
-                .builder()
-                .addField("Message", message, true)
-                .setDescription("A User sent two messages within a quater of a second of eachother (SPAM)")
-                .addField("User punished", "<@" + member.getUser().getId() + ">", true);
+        return null;
     }
 }

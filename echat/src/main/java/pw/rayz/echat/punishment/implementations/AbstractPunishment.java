@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pw.rayz.echat.EChat;
 import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.PunishmentType;
@@ -26,6 +27,7 @@ public abstract class AbstractPunishment implements Punishment {
         this(type, IdentityService.getService().nextId(), member);
     }
 
+    @Nullable
     abstract protected EmbedBuilder prepareAuditEmbed();
 
     @Override
@@ -33,8 +35,11 @@ public abstract class AbstractPunishment implements Punishment {
         TextChannel channel = EChat.eChat().getBot().getLogChannel();
 
         if (channel != null) {
-            MessageEmbed embed = prepareAuditEmbed().build();
-            channel.sendMessage(embed).queue();
+            EmbedBuilder builder = prepareAuditEmbed();
+            MessageEmbed embed = builder != null ? builder.build() : null;
+
+            if (embed != null)
+                channel.sendMessage(embed).queue();
         }
     }
 

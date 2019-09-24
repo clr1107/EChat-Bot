@@ -25,7 +25,7 @@ public class SpamFilter {
 
     public boolean canSend(Member member) {
         Instant previous = previousMessage.get(member.getIdLong());
-        return previous != null && previous.plusMillis(250).isAfter(Instant.now());
+        return previous == null || Instant.now().isAfter(previous.plusMillis(250));
     }
 
     public boolean testForCaps(String message) {

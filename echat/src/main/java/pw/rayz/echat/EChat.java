@@ -15,11 +15,9 @@ public class EChat {
     private ExecutorService executorService;
     private Configuration config;
     private JDABot bot;
-    private SpamFilter spamFilter;
     private boolean running = false;
 
     private EChat() {
-        this.spamFilter = new SpamFilter();
     }
 
     public static void main(String[] args) {
@@ -83,10 +81,6 @@ public class EChat {
 
     public JDABot getBot() {
         return bot;
-    }
-
-    public SpamFilter getSpamFilter() {
-        return spamFilter;
     }
 
     public boolean isRunning() {

@@ -32,41 +32,40 @@ public class CharacterLimitListener extends ListenerAdapter {
         return message.getContentRaw().length() >= characterLimit;
     }
 
-    @Override
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        TextChannel channel = event.getChannel();
-        Member member = event.getMember();
-
+    private boolean testAndPunish(TextChannel channel, Member member, Message message) {
         if (!eChat.getBot().isGuildChannel(channel))
-            return;
+            return false;
 
-        if (member != null && passJudgement(event.getMessage())) {
+        if (member != null && passJudgement(message)) {
             logger.info(member.getUser().getName() + " Broke character limit");
 
             Punishment punishment = new IllegalCharacterCountInfraction(channel, member);
 
             punishment.send();
             punishment.sendAudit();
-            event.getMessage().delete().queue();
+            return true;
         }
+
+        return false;
+    }
+
+    @Override
+    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+        TextChannel channel = event.getChannel();
+        Member member = event.getMember();
+        Message message = event.getMessage();
+
+        if (testAndPunish(channel, member, message))
+            event.getMessage().delete().queue();
     }
 
     @Override
     public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
         TextChannel channel = event.getChannel();
         Member member = event.getMember();
+        Message message = event.getMessage();
 
-        if (!eChat.getBot().isGuildChannel(channel))
-            return;
-
-        if (member != null && passJudgement(event.getMessage())) {
-            logger.info(member.getUser().getName() + " Broke character limit");
-
-            Punishment punishment = new IllegalCharacterCountInfraction(channel, member);
-
-            punishment.send();
-            punishment.sendAudit();
+        if (testAndPunish(channel, member, message))
             event.getMessage().delete().queue();
-        }
     }
 }

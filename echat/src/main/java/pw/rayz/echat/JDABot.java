@@ -22,11 +22,13 @@ public class JDABot {
     private final EChat eChat = EChat.eChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private JDA jda;
+    private SpamFilter spamFilter;
     private String guildId;
     private String logChannelId;
 
     JDABot() {
         this.jda = loadJDA(eChat.getConfig().getString("token", false));
+        this.spamFilter = new SpamFilter();
 
         eChat.getConfig().addLoadTask(this::loadConfiguration, true);
         loadListeners();
@@ -102,6 +104,10 @@ public class JDABot {
 
     public JDA getJDA() {
         return jda;
+    }
+
+    public SpamFilter getSpamFilter() {
+        return spamFilter;
     }
 
     public String getGuildId() {
