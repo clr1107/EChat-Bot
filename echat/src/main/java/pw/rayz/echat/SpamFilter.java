@@ -7,10 +7,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SpamFilter {
-    private Map<Long, Instant> previousMessage = new ConcurrentHashMap<>();
+    private final EChat eChat = EChat.eChat();
+    private final Map<Long, Instant> previousMessage = new ConcurrentHashMap<>();
+    private double capsPerc;
 
     public SpamFilter() {
+        eChat.getConfig().addLoadTask(this::loadConfig, true);
+    }
 
+    private void loadConfig() {
+        capsPerc = eChat.getConfig().getDouble("caps_percentage", 100D, false);
     }
 
     public void sent(Member member) {
@@ -20,5 +26,14 @@ public class SpamFilter {
     public boolean canSend(Member member) {
         Instant previous = previousMessage.get(member.getIdLong());
         return previous != null && previous.plusMillis(250).isAfter(Instant.now());
+    }
+
+    public boolean testForCaps(String message) {
+        long upper = message.chars().mapToObj((c) -> (char) c).filter(Character::isUpperCase).count();
+        return (((double) upper / (double) message.length()) * 100) >= capsPerc;
+    }
+
+    public boolean passesTests(Member member, String message) {
+        return canSend(member) && !testForCaps(message);
     }
 }
