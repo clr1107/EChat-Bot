@@ -33,10 +33,10 @@ public class CharacterLimitListener extends ListenerAdapter {
     }
 
     private boolean testAndPunish(TextChannel channel, Member member, Message message) {
-        if (!eChat.getBot().isGuildChannel(channel))
+        if (member == null || !eChat.getBot().isGuildChannel(channel))
             return false;
 
-        if (member != null && passJudgement(message)) {
+        if (!member.getUser().isBot() && passJudgement(message)) {
             logger.info(member.getUser().getName() + " Broke character limit");
 
             Punishment punishment = new IllegalCharacterCountInfraction(channel, member);

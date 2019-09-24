@@ -53,10 +53,10 @@ public class BannedWordListener extends ListenerAdapter {
     private boolean testAndPunish(TextChannel channel, Member member, String message) {
         String matchingWord;
 
-        if (!eChat.getBot().isGuildChannel(channel))
+        if (member == null || !eChat.getBot().isGuildChannel(channel))
             return false;
 
-        if (member != null && (matchingWord = matches(message)) != null) {
+        if (!member.getUser().isBot() && (matchingWord = matches(message)) != null) {
             logger.info(member.getUser().getName() + " Said banned word: " + matchingWord);
 
             Punishment punishment = new IllegalWordInfraction(channel, matchingWord, member);

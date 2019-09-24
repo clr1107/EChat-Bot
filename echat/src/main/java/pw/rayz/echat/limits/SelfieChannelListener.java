@@ -35,13 +35,13 @@ public class SelfieChannelListener extends ListenerAdapter {
     }
 
     private boolean testAndPunish(TextChannel channel, Member member, Message message) {
-        if (!eChat.getBot().isGuildChannel(channel))
+        if (member == null || !eChat.getBot().isGuildChannel(channel))
             return false;
 
-        if (!message.getAttachments().isEmpty())
+        if (member.getUser().isBot() || !message.getAttachments().isEmpty())
             return false;
 
-        if (member != null && selfieChannels.contains(channel.getId())) {
+        if (selfieChannels.contains(channel.getId())) {
             logger.info(member.getUser().getName() + " Talking in selfie channel");
 
             Punishment punishment = new IllegalChannelChatInfraction(channel, member);

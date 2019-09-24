@@ -15,7 +15,7 @@ public class SpamFilterListener extends ListenerAdapter {
     private final EChat eChat = EChat.eChat();
 
     private boolean testAndPunish(Member member, TextChannel channel, String message) {
-        if (member == null || !eChat.getBot().isGuildChannel(channel))
+        if (member == null || member.getUser().isBot() || !eChat.getBot().isGuildChannel(channel))
             return false;
 
         if (!eChat.getBot().getSpamFilter().passesTests(member, message)) {
