@@ -1,8 +1,10 @@
 package pw.rayz.echat.limits;
 
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import pw.rayz.echat.Configuration;
@@ -10,6 +12,7 @@ import pw.rayz.echat.EChat;
 import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.implementations.IllegalChannelChatInfraction;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -31,16 +34,12 @@ public class SelfieChannelListener extends ListenerAdapter {
             selfieChannels = list;
     }
 
-    @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
-        TextChannel channel = event.getChannel();
-        Member member = event.getMember();
-
+    private boolean testAndPunish(TextChannel channel, Member member, Message message) {
         if (!eChat.getBot().isGuildChannel(channel))
-            return;
+            return false;
 
-        if (!event.getMessage().getAttachments().isEmpty())
-            return;
+        if (!message.getAttachments().isEmpty())
+            return false;
 
         if (member != null && selfieChannels.contains(channel.getId())) {
             logger.info(member.getUser().getName() + " Talking in selfie channel");
@@ -49,8 +48,29 @@ public class SelfieChannelListener extends ListenerAdapter {
 
             punishment.send();
             punishment.sendAudit();
-
-            event.getMessage().delete().queue();
+            return true;
         }
+
+        return false;
+    }
+
+    @Override
+    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+        TextChannel channel = event.getChannel();
+        Member member = event.getMember();
+        Message message = event.getMessage();
+
+        if (testAndPunish(channel, member, message))
+            event.getMessage().delete().queue();
+    }
+
+    @Override
+    public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
+        TextChannel channel = event.getChannel();
+        Member member = event.getMember();
+        Message message = event.getMessage();
+
+        if (testAndPunish(channel, member, message))
+            event.getMessage().delete().queue();
     }
 }

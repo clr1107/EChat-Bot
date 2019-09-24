@@ -3,6 +3,7 @@ package pw.rayz.echat.limits;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import pw.rayz.echat.Configuration;
@@ -49,15 +50,11 @@ public class BannedWordListener extends ListenerAdapter {
         return null;
     }
 
-    @Override
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        TextChannel channel = event.getChannel();
-        Member member = event.getMember();
-        String message = event.getMessage().getContentRaw();
+    private boolean testAndPunish(TextChannel channel, Member member, String message) {
         String matchingWord;
 
         if (!eChat.getBot().isGuildChannel(channel))
-            return;
+            return false;
 
         if (member != null && (matchingWord = matches(message)) != null) {
             logger.info(member.getUser().getName() + " Said banned word: " + matchingWord);
@@ -66,8 +63,29 @@ public class BannedWordListener extends ListenerAdapter {
 
             punishment.send();
             punishment.sendAudit();
-
-            event.getMessage().delete().queue();
+            return true;
         }
+
+        return false;
+    }
+
+    @Override
+    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+        TextChannel channel = event.getChannel();
+        Member member = event.getMember();
+        String message = event.getMessage().getContentRaw();
+
+        if (testAndPunish(channel, member, message))
+            event.getMessage().delete().queue();
+    }
+
+    @Override
+    public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
+        TextChannel channel = event.getChannel();
+        Member member = event.getMember();
+        String message = event.getMessage().getContentRaw();
+
+        if (testAndPunish(channel, member, message))
+            event.getMessage().delete().queue();
     }
 }
