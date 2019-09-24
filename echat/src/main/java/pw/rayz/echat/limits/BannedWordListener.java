@@ -37,7 +37,8 @@ public class BannedWordListener extends ListenerAdapter {
         String[] words = message.split(" ");
 
         for (String word : words) {
-            double perc = word.length() >= 6 ? 0.85 : 0.7;
+//            double perc = word.length() >= 6 ? 0.85 : 0.7;
+            double perc = 0.87;
             boolean matches = bannedWords.parallelStream()
                     .anyMatch(test -> similarity.apply(word, test.toLowerCase()) >= perc);
 

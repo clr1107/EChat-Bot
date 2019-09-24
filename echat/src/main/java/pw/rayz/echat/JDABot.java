@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import pw.rayz.echat.limits.BannedWordListener;
 import pw.rayz.echat.limits.CharacterLimitListener;
 import pw.rayz.echat.limits.SelfieChannelListener;
+import pw.rayz.echat.limits.SpamFilterListener;
 import pw.rayz.echat.listeners.PrivateMessageListener;
 
 import javax.security.auth.login.LoginException;
@@ -21,18 +22,18 @@ public class JDABot {
     private final EChat eChat = EChat.eChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private JDA jda;
-    private long guildId;
+    private String guildId;
     private String logChannelId;
 
     JDABot() {
-        this.jda = loadJDA(EChat.eChat().getConfig().getString("token", false));
+        this.jda = loadJDA(eChat.getConfig().getString("token", false));
 
         eChat.getConfig().addLoadTask(this::loadConfiguration, true);
         loadListeners();
     }
 
     private void loadConfiguration() {
-        guildId = eChat.getConfig().getLong("guild_id", -1L, false);
+        guildId = eChat.getConfig().getString("guild_id", null, false);
         logChannelId = eChat.getConfig().getString("channels.log", null, false);
     }
 
@@ -41,6 +42,7 @@ public class JDABot {
         addListener(new BannedWordListener());
         addListener(new PrivateMessageListener());
         addListener(new CharacterLimitListener());
+        addListener(new SpamFilterListener());
     }
 
     private JDA loadJDA(String token) {
@@ -61,7 +63,7 @@ public class JDABot {
 
     public void addListener(@NotNull EventListener listener) {
         jda.addEventListener(listener);
-        logger.info("Added event: " + listener.getClass().getName());
+        logger.info("Added event listener: " + listener.getClass().getName());
     }
 
     public boolean awaitReady() {
@@ -70,29 +72,29 @@ public class JDABot {
             return true;
         } catch (InterruptedException exception) {
             exception.printStackTrace();
-            logger.severe("Could not wait until JDA is ready.");
+            logger.severe("Cannot wait until JDA is ready.");
 
             return false;
         }
     }
 
     public boolean isInGuild(@Nullable User user) {
-        if (user != null && guildId != -1D) {
+        if (user != null && guildId != null) {
             Guild guild = jda.getGuildById(guildId);
             return guild != null && guild.isMember(user);
         } else return false;
     }
 
     public boolean isGuildChannel(@Nullable GuildChannel channel) {
-        if (channel != null && guildId != -1D) {
+        if (channel != null && guildId != null) {
             Guild guild = jda.getGuildById(guildId);
-            return guild != null && channel.getGuild().getIdLong() == guildId;
+            return guild != null && channel.getGuild().getId().equals(guildId);
         } else return false;
     }
 
     @Nullable
     public TextChannel getLogChannel() {
-        if (guildId != -1 && logChannelId != null) {
+        if (guildId != null && logChannelId != null) {
             Guild guild = jda.getGuildById(guildId);
             return guild != null ? guild.getTextChannelById(logChannelId) : null;
         } else return null;
@@ -102,7 +104,7 @@ public class JDABot {
         return jda;
     }
 
-    public long getGuildId() {
+    public String getGuildId() {
         return guildId;
     }
 

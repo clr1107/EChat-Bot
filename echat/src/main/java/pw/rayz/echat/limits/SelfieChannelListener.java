@@ -39,6 +39,9 @@ public class SelfieChannelListener extends ListenerAdapter {
         if (!eChat.getBot().isGuildChannel(channel))
             return;
 
+        if (!event.getMessage().getAttachments().isEmpty())
+            return;
+
         if (member != null && selfieChannels.contains(channel.getId())) {
             logger.info(member.getUser().getName() + " Talking in selfie channel");
 
