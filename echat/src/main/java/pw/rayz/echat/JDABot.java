@@ -2,17 +2,12 @@ package pw.rayz.echat;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pw.rayz.echat.limits.BannedWordListener;
-import pw.rayz.echat.limits.CharacterLimitListener;
-import pw.rayz.echat.limits.SelfieChannelListener;
-import pw.rayz.echat.limits.SpamFilterListener;
+import pw.rayz.echat.chat.ChatListener;
+import pw.rayz.echat.chat.MessageFilter;
 import pw.rayz.echat.listeners.PrivateMessageListener;
 
 import javax.security.auth.login.LoginException;
@@ -22,15 +17,17 @@ public class JDABot {
     private final EChat eChat = EChat.eChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private JDA jda;
-    private SpamFilter spamFilter;
+    private MessageFilter messageFilter;
     private String guildId;
     private String logChannelId;
 
     JDABot() {
         this.jda = loadJDA(eChat.getConfig().getString("token", false));
-        this.spamFilter = new SpamFilter();
-
         eChat.getConfig().addLoadTask(this::loadConfiguration, true);
+    }
+
+    void load() {
+        messageFilter = new MessageFilter();
         loadListeners();
     }
 
@@ -40,11 +37,8 @@ public class JDABot {
     }
 
     private void loadListeners() {
-        addListener(new SelfieChannelListener());
-        addListener(new BannedWordListener());
+        addListener(new ChatListener(messageFilter));
         addListener(new PrivateMessageListener());
-        addListener(new CharacterLimitListener());
-        addListener(new SpamFilterListener());
     }
 
     private JDA loadJDA(String token) {
@@ -80,34 +74,51 @@ public class JDABot {
         }
     }
 
+    @Nullable
+    public Guild getEChatGuild() {
+        return guildId != null ? jda.getGuildById(guildId) : null;
+    }
+
     public boolean isInGuild(@Nullable User user) {
-        if (user != null && guildId != null) {
-            Guild guild = jda.getGuildById(guildId);
-            return guild != null && guild.isMember(user);
-        } else return false;
+        Guild guild = getEChatGuild();
+
+        if (user != null && guild != null)
+            return guild.isMember(user);
+        else return false;
     }
 
     public boolean isGuildChannel(@Nullable GuildChannel channel) {
-        if (channel != null && guildId != null) {
-            Guild guild = jda.getGuildById(guildId);
-            return guild != null && channel.getGuild().getId().equals(guildId);
-        } else return false;
+        Guild guild = getEChatGuild();
+
+        if (channel != null && guild != null)
+            return channel.getGuild().getId().equals(guildId);
+        else return false;
     }
 
     @Nullable
     public TextChannel getLogChannel() {
-        if (guildId != null && logChannelId != null) {
-            Guild guild = jda.getGuildById(guildId);
-            return guild != null ? guild.getTextChannelById(logChannelId) : null;
-        } else return null;
+        Guild guild = getEChatGuild();
+
+        if (guild != null && logChannelId != null)
+            return guild.getTextChannelById(logChannelId);
+        else return null;
+    }
+
+    @Nullable
+    public Role getGuildRole(String id) {
+        Guild guild = getEChatGuild();
+
+        if (guild != null && id != null)
+            return guild.getRoleById(id);
+        else return null;
+    }
+
+    public MessageFilter getMessageFilter() {
+        return messageFilter;
     }
 
     public JDA getJDA() {
         return jda;
-    }
-
-    public SpamFilter getSpamFilter() {
-        return spamFilter;
     }
 
     public String getGuildId() {

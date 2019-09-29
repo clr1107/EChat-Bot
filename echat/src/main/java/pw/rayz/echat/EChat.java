@@ -3,6 +3,7 @@ package pw.rayz.echat;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalTime;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,12 +11,13 @@ import java.util.logging.Logger;
 
 public class EChat {
     public static final String COMMAND_PREFIX = "::";
-    private static EChat instance = new EChat();
+    private static final EChat instance = new EChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private ExecutorService executorService;
     private Configuration config;
     private JDABot bot;
     private boolean running = false;
+    private long startup;
 
     private EChat() {
     }
@@ -23,6 +25,7 @@ public class EChat {
     public static void main(String[] args) {
         instance.load();
         instance.logger.info("Connected to E-Chat server.");
+        instance.startup = System.currentTimeMillis();
 
         // Yes, it's hacky, but temporary ;)
         Scanner scanner = new Scanner(System.in);
@@ -31,7 +34,10 @@ public class EChat {
                 instance.stop();
             else if (next.equals("reload"))
                 instance.config.load();
-            else instance.logger.info("Unknown command supplied, only command is \"stop\"");
+            else if (next.equalsIgnoreCase("ut")) {
+                long seconds = (System.currentTimeMillis() - instance.startup) / 1000;
+                instance.logger.info("Uptime: " + LocalTime.MIN.plusSeconds(seconds).toString());
+            } else instance.logger.info("Unknown command supplied, only command is \"stop\"");
         }
     }
 
@@ -40,7 +46,9 @@ public class EChat {
 
         this.executorService = Executors.newFixedThreadPool(4);
         this.config = new Configuration("config.json");
+
         this.bot = new JDABot();
+        bot.load();
     }
 
     public void stop() {
