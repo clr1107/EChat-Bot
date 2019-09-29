@@ -3,7 +3,8 @@ package pw.rayz.echat.chat;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import pw.rayz.echat.EChat;
+import pw.rayz.echat.Configuration;
+import pw.rayz.echat.JDABot;
 
 import java.time.Instant;
 import java.util.*;
@@ -11,24 +12,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class MessageFilter {
-    private final EChat eChat = EChat.eChat();
+    private final JDABot bot;
     private final Map<Long, Instant> previousMessageInstants = new ConcurrentHashMap<>();
     private final Properties properties = new Properties();
     private List<String> bannedWords;
     private List<String> immuneRoles;
 
-    public MessageFilter() {
-        eChat.getConfig().addLoadTask(this::loadConfig, true);
+    public MessageFilter(JDABot bot) {
+        this.bot = bot;
+
+        bot.getEChat().getConfig().addLoadTask(this::loadConfig, true);
     }
 
     private void loadConfig() {
-        properties.put("check_caps", eChat.getConfig().getBoolean("limits.check_caps", false, false));
-        properties.put("spam_millis", eChat.getConfig().getInt("limits.spam_millis", -1, false));
-        properties.put("caps_percentage", eChat.getConfig().getInt("limits.caps_percentage", 100, false));
-        properties.put("character_limit", eChat.getConfig().getInt("limits.characters", 800, false));
+        Configuration config = bot.getEChat().getConfig();
 
-        bannedWords = (List<String>) eChat.getConfig().getField("banned_words", new ArrayList<>(), ArrayList.class, false);
-        immuneRoles = (List<String>) eChat.getConfig().getField("roles.message_filter_bypass", new ArrayList<>(), ArrayList.class, false);
+        properties.put("check_caps", config.getBoolean("limits.check_caps", false, false));
+        properties.put("spam_millis", config.getInt("limits.spam_millis", -1, false));
+        properties.put("caps_percentage", config.getInt("limits.caps_percentage", 100, false));
+        properties.put("character_limit", config.getInt("limits.characters", 800, false));
+
+        bannedWords = (List<String>) config.getField("banned_words", new ArrayList<>(), ArrayList.class, false);
+        immuneRoles = (List<String>) config.getField("roles.message_filter_bypass", new ArrayList<>(), ArrayList.class, false);
     }
 
     public void registerSentMessage(Member member) {
@@ -36,7 +41,7 @@ public class MessageFilter {
     }
 
     public boolean isImmune(Member member) {
-        List<Role> roles = immuneRoles.stream().map(r -> eChat.getBot().getGuildRole(r)).collect(Collectors.toList());
+        List<Role> roles = immuneRoles.stream().map(bot::getGuildRole).collect(Collectors.toList());
         return roles.stream().anyMatch(r -> member.getRoles().contains(r));
     }
 

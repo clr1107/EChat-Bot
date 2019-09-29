@@ -11,6 +11,8 @@ import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.PunishmentType;
 import pw.rayz.echat.utils.IdentityService;
 
+import java.util.logging.Level;
+
 public abstract class AbstractPunishment implements Punishment {
     protected final EChat eChat = EChat.eChat();
     private final PunishmentType type;
@@ -33,10 +35,13 @@ public abstract class AbstractPunishment implements Punishment {
     @Override
     public void sendAudit() {
         TextChannel channel = EChat.eChat().getBot().getLogChannel();
+        String msg = "Sending punishment of type: \"%s\" to user displayed as \"%s\" (id: %s)";
 
         if (channel != null) {
             EmbedBuilder builder = prepareAuditEmbed();
             MessageEmbed embed = builder != null ? builder.build() : null;
+
+            eChat.getLogger().log(Level.INFO, String.format(msg, type.name, member.getEffectiveName(), Long.toHexString(id)));
 
             if (embed != null)
                 channel.sendMessage(embed).queue();

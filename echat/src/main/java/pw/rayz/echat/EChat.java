@@ -1,15 +1,21 @@
 package pw.rayz.echat;
 
+import pw.rayz.echat.utils.logging.ConsoleLoggerFormatter;
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalTime;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Logger;
 
-public class EChat {
+public final class EChat {
     public static final String COMMAND_PREFIX = "::";
     private static final EChat instance = new EChat();
     private final Logger logger = Logger.getLogger("EChat-Bot");
@@ -23,13 +29,17 @@ public class EChat {
     }
 
     public static void main(String[] args) {
+        instance.setupLogger();
+
+        instance.logger.info("Starting up...");
         instance.load();
-        instance.logger.info("Connected to E-Chat server.");
         instance.startup = System.currentTimeMillis();
 
         // Yes, it's hacky, but temporary ;)
         Scanner scanner = new Scanner(System.in);
-        for (String next = ""; instance.running; next = scanner.next()) {
+        String next;
+
+        while (instance.running && (next = scanner.next()) != null) {
             if (next.equals("stop"))
                 instance.stop();
             else if (next.equals("reload"))
@@ -37,17 +47,36 @@ public class EChat {
             else if (next.equalsIgnoreCase("ut")) {
                 long seconds = (System.currentTimeMillis() - instance.startup) / 1000;
                 instance.logger.info("Uptime: " + LocalTime.MIN.plusSeconds(seconds).toString());
-            } else instance.logger.info("Unknown command supplied, only command is \"stop\"");
+            } else instance.logger.info("Unknown command supplied, stop, reload, ut");
+        }
+    }
+
+    private void setupLogger() {
+        logger.setUseParentHandlers(false);
+        String loggingFile = new File(getFolder().getParentFile(), "log.txt").toPath().toString();
+
+        try {
+            ConsoleHandler consoleHandler = new ConsoleHandler();
+            FileHandler fileHandler = new FileHandler(loggingFile, true);
+            Formatter formatter = new ConsoleLoggerFormatter();
+
+            consoleHandler.setFormatter(formatter);
+            fileHandler.setFormatter(formatter);
+
+            logger.addHandler(consoleHandler);
+            logger.addHandler(fileHandler);
+        } catch (IOException exception) {
+            System.out.println("Error tuning logger.");
+            System.exit(1);
         }
     }
 
     private void load() {
         this.running = true;
-
         this.executorService = Executors.newFixedThreadPool(4);
         this.config = new Configuration("config.json");
 
-        this.bot = new JDABot();
+        this.bot = new JDABot(this);
         bot.load();
     }
 

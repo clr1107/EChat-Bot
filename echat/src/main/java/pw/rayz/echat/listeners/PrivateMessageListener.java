@@ -4,7 +4,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import pw.rayz.echat.EChat;
+import pw.rayz.echat.Configuration;
+import pw.rayz.echat.JDABot;
 import pw.rayz.echat.utils.EmbedBuilderTemplate;
 
 import javax.annotation.Nonnull;
@@ -13,16 +14,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PrivateMessageListener extends ListenerAdapter {
-    private final EChat eChat = EChat.eChat();
+    private final JDABot bot;
     private final Map<Long, Instant> previouslySent = new HashMap<>();
     private String message;
 
-    public PrivateMessageListener() {
-        eChat.getConfig().addLoadTask(this::loadMessage, true);
+    public PrivateMessageListener(JDABot bot) {
+        this.bot = bot;
+
+        bot.getEChat().getConfig().addLoadTask(this::loadMessage, true);
     }
 
     private void loadMessage() {
-        message = eChat.getConfig().getString("standard_messages.private_response", "Hi!", false);
+        Configuration config = bot.getEChat().getConfig();
+
+        message = config.getString("standard_messages.private_response", "Hi!", false);
     }
 
     private void sendResponse(User user) {
@@ -42,7 +47,7 @@ public class PrivateMessageListener extends ListenerAdapter {
     public void onPrivateMessageReceived(@Nonnull PrivateMessageReceivedEvent event) {
         User user = event.getAuthor();
 
-        if (user.isBot() || !eChat.getBot().isInGuild(user))
+        if (user.isBot() || !bot.isInGuild(user))
             return; // not in the echat server; or a bot.
 
         if (shouldSend(user))

@@ -13,21 +13,25 @@ import pw.rayz.echat.listeners.PrivateMessageListener;
 import javax.security.auth.login.LoginException;
 import java.util.logging.Logger;
 
-public class JDABot {
-    private final EChat eChat = EChat.eChat();
+public final class JDABot {
+    private final EChat eChat;
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private JDA jda;
     private MessageFilter messageFilter;
     private String guildId;
     private String logChannelId;
 
-    JDABot() {
+    JDABot(EChat eChat) {
+        this.eChat = eChat;
         this.jda = loadJDA(eChat.getConfig().getString("token", false));
+
         eChat.getConfig().addLoadTask(this::loadConfiguration, true);
     }
 
     void load() {
-        messageFilter = new MessageFilter();
+        logger.info("Calling JDABot#load - loading listeners & other necessary functions.");
+
+        messageFilter = new MessageFilter(this);
         loadListeners();
     }
 
@@ -38,7 +42,7 @@ public class JDABot {
 
     private void loadListeners() {
         addListener(new ChatListener(messageFilter));
-        addListener(new PrivateMessageListener());
+        addListener(new PrivateMessageListener(this));
     }
 
     private JDA loadJDA(String token) {
@@ -50,6 +54,7 @@ public class JDABot {
                     .build();
 
             jda.awaitReady();
+            logger.info("Connected to E-Chat server");
         } catch (LoginException | InterruptedException exception) {
             exception.printStackTrace();
         }
@@ -115,6 +120,10 @@ public class JDABot {
 
     public MessageFilter getMessageFilter() {
         return messageFilter;
+    }
+
+    public EChat getEChat() {
+        return eChat;
     }
 
     public JDA getJDA() {
