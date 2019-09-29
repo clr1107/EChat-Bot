@@ -52,8 +52,7 @@ public class AFKCommand extends AbstractCommand {
             msg = builder.toString();
         }
 
-        bot.getAFKMap().put(member.getIdLong(), msg);
-        sendAFK(commandExecution.getCause().getChannel(), member, msg);
+        bot.getAfkHandler().setAfk(commandExecution.getCause().getChannel(), member, msg);
     }
 
     @Override

@@ -15,8 +15,6 @@ import pw.rayz.echat.punishment.implementations.IllegalWordInfraction;
 import pw.rayz.echat.punishment.implementations.SpamInfraction;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Map;
 
 public class ChatListener extends ListenerAdapter {
     private final JDABot bot;
@@ -25,32 +23,17 @@ public class ChatListener extends ListenerAdapter {
         this.bot = bot;
     }
 
-    private void testAFK(Member member, Message message) {
+    private void testAFK(Message message) {
         JDABot bot = EChat.eChat().getBot();
+        TextChannel channel = message.getTextChannel();
+        Member member = message.getMember();
 
-        if (bot.getAFKMap().containsKey(member.getIdLong())) {
-            bot.getAFKMap().remove(member.getIdLong());
-            message.getChannel().sendMessage("Removed your afk, " + member.getEffectiveName()).queue();
-
+        if (bot.getAfkHandler().getAFK(message.getMember()) != null) {
+            bot.getAfkHandler().removeAFK(channel, member);
             return;
         }
 
-        Map<Long, String> afk = bot.getAFKMap();
-        List<Member> mentionedMembers = message.getMentionedMembers();
-        StringBuilder msg = new StringBuilder();
-
-        for (Member mem : mentionedMembers) {
-            long id = mem.getIdLong();
-            if (!afk.containsKey(id))
-                continue;
-
-            msg.append(" ");
-            msg.append(mem.getEffectiveName()).append(" is afk: ").append(afk.get(id)).append(".");
-        }
-
-        String send = msg.toString();
-        if (!send.isBlank())
-            message.getChannel().sendMessage(msg.toString()).queue();
+        bot.getAfkHandler().taggedAFK(message);
     }
 
     private boolean testMessage(Member member, Message message, TextChannel channel) {
@@ -98,7 +81,7 @@ public class ChatListener extends ListenerAdapter {
         if (!testMessage(event.getMember(), message, event.getChannel()))
             message.delete().queue();
         else {
-            testAFK(member, message);
+            testAFK(message);
             bot.getMessageFilter().registerSentMessage(member);
         }
     }
@@ -116,6 +99,9 @@ public class ChatListener extends ListenerAdapter {
 
         if (!testMessage(event.getMember(), message, event.getChannel()))
             message.delete().queue();
-        else bot.getMessageFilter().registerSentMessage(member);
+        else {
+            testAFK(message);
+            bot.getMessageFilter().registerSentMessage(member);
+        }
     }
 }

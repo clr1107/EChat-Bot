@@ -8,13 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rayz.echat.chat.ChatListener;
 import pw.rayz.echat.chat.MessageFilter;
+import pw.rayz.echat.chat.afk.AFKHandler;
 import pw.rayz.echat.commands.CommandHandler;
 import pw.rayz.echat.commands.implementation.AFKCommand;
 import pw.rayz.echat.listeners.PrivateMessageListener;
 
 import javax.security.auth.login.LoginException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public final class JDABot {
@@ -25,7 +24,7 @@ public final class JDABot {
     private CommandHandler commandHandler;
     private String guildId;
     private String logChannelId;
-    private final Map<Long, String> afkMap = new HashMap<>();
+    private final AFKHandler afkHandler = new AFKHandler();
 
     JDABot(EChat eChat) {
         this.eChat = eChat;
@@ -152,7 +151,7 @@ public final class JDABot {
         return logChannelId;
     }
 
-    public Map<Long, String> getAFKMap() {
-        return afkMap;
+    public AFKHandler getAfkHandler() {
+        return afkHandler;
     }
 }
