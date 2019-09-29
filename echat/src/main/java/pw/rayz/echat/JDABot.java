@@ -50,7 +50,7 @@ public final class JDABot {
     }
 
     private void loadListeners() {
-        addListener(new ChatListener(messageFilter));
+        addListener(new ChatListener(this));
         addListener(new PrivateMessageListener(this));
         addListener(commandHandler);
     }

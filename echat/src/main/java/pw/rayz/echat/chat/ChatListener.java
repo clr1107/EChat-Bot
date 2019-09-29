@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import pw.rayz.echat.EChat;
 import pw.rayz.echat.JDABot;
 import pw.rayz.echat.punishment.Punishment;
+import pw.rayz.echat.punishment.implementations.IllegalChannelChatInfraction;
 import pw.rayz.echat.punishment.implementations.IllegalCharacterCountInfraction;
 import pw.rayz.echat.punishment.implementations.IllegalWordInfraction;
 import pw.rayz.echat.punishment.implementations.SpamInfraction;
@@ -18,10 +19,10 @@ import java.util.List;
 import java.util.Map;
 
 public class ChatListener extends ListenerAdapter {
-    private final MessageFilter filter;
+    private final JDABot bot;
 
-    public ChatListener(MessageFilter filter) {
-        this.filter = filter;
+    public ChatListener(JDABot bot) {
+        this.bot = bot;
     }
 
     private void testAFK(Member member, Message message) {
@@ -54,9 +55,13 @@ public class ChatListener extends ListenerAdapter {
 
     private boolean testMessage(Member member, Message message, TextChannel channel) {
         Punishment punishment = null;
+        MessageFilter filter = bot.getMessageFilter();
 
         if (filter.checkForSpam(member))
             punishment = new SpamInfraction(channel, message.getContentRaw(), member);
+
+        if (punishment == null && filter.isIllegalChannel(message))
+            punishment = new IllegalChannelChatInfraction(channel, member);
 
         if (punishment == null && filter.checkForLength(message))
             punishment = new IllegalCharacterCountInfraction(channel, member);
@@ -84,6 +89,9 @@ public class ChatListener extends ListenerAdapter {
         Message message = event.getMessage();
         Member member = event.getMember();
 
+        if (!bot.isGuildChannel(message.getTextChannel()))
+            return;
+
         if (member == null || member.getUser().isBot())
             return;
 
@@ -91,7 +99,7 @@ public class ChatListener extends ListenerAdapter {
             message.delete().queue();
         else {
             testAFK(member, message);
-            filter.registerSentMessage(member);
+            bot.getMessageFilter().registerSentMessage(member);
         }
     }
 
@@ -100,11 +108,14 @@ public class ChatListener extends ListenerAdapter {
         Message message = event.getMessage();
         Member member = event.getMember();
 
+        if (!bot.isGuildChannel(message.getTextChannel()))
+            return;
+
         if (member == null || member.getUser().isBot())
             return;
 
         if (!testMessage(event.getMember(), message, event.getChannel()))
             message.delete().queue();
-        else filter.registerSentMessage(member);
+        else bot.getMessageFilter().registerSentMessage(member);
     }
 }

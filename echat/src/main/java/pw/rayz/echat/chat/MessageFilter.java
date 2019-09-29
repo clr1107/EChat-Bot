@@ -17,6 +17,7 @@ public class MessageFilter {
     private final Properties properties = new Properties();
     private List<String> bannedWords;
     private List<String> immuneRoles;
+    private List<String> selfieChannels;
 
     public MessageFilter(JDABot bot) {
         this.bot = bot;
@@ -34,6 +35,7 @@ public class MessageFilter {
 
         bannedWords = (List<String>) config.getField("banned_words", new ArrayList<>(), ArrayList.class, false);
         immuneRoles = (List<String>) config.getField("roles.message_filter_bypass", new ArrayList<>(), ArrayList.class, false);
+        selfieChannels = (List<String>) config.getField("channels.selfies", new ArrayList<>(), ArrayList.class, false);
     }
 
     public void registerSentMessage(Member member) {
@@ -43,6 +45,13 @@ public class MessageFilter {
     public boolean isImmune(Member member) {
         List<Role> roles = immuneRoles.stream().map(bot::getGuildRole).collect(Collectors.toList());
         return roles.stream().anyMatch(r -> member.getRoles().contains(r));
+    }
+
+    public boolean isIllegalChannel(Message message) {
+        if (isImmune(message.getMember()))
+            return false;
+
+        return selfieChannels.contains(message.getChannel().getId()) && message.getAttachments().isEmpty();
     }
 
     public boolean checkForSpam(Member member) {
