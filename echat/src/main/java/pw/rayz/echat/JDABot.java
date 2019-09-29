@@ -8,9 +8,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import pw.rayz.echat.chat.ChatListener;
 import pw.rayz.echat.chat.MessageFilter;
+import pw.rayz.echat.commands.CommandHandler;
+import pw.rayz.echat.commands.implementation.AFKCommand;
 import pw.rayz.echat.listeners.PrivateMessageListener;
 
 import javax.security.auth.login.LoginException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public final class JDABot {
@@ -18,8 +22,10 @@ public final class JDABot {
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private JDA jda;
     private MessageFilter messageFilter;
+    private CommandHandler commandHandler;
     private String guildId;
     private String logChannelId;
+    private final Map<Long, String> afkMap = new HashMap<>();
 
     JDABot(EChat eChat) {
         this.eChat = eChat;
@@ -32,7 +38,10 @@ public final class JDABot {
         logger.info("Calling JDABot#load - loading listeners & other necessary functions.");
 
         messageFilter = new MessageFilter(this);
+        commandHandler = new CommandHandler(this);
+
         loadListeners();
+        loadCommands();
     }
 
     private void loadConfiguration() {
@@ -43,6 +52,11 @@ public final class JDABot {
     private void loadListeners() {
         addListener(new ChatListener(messageFilter));
         addListener(new PrivateMessageListener(this));
+        addListener(commandHandler);
+    }
+
+    private void loadCommands() {
+        commandHandler.registerCommand(new AFKCommand(this));
     }
 
     private JDA loadJDA(String token) {
@@ -136,5 +150,9 @@ public final class JDABot {
 
     public String getLogChannelId() {
         return logChannelId;
+    }
+
+    public Map<Long, String> getAFKMap() {
+        return afkMap;
     }
 }
