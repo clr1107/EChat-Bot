@@ -5,6 +5,9 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import pw.rayz.echat.Configuration;
 import pw.rayz.echat.JDABot;
+import pw.rayz.echat.chat.hooks.ChatHook;
+import pw.rayz.echat.chat.hooks.implementations.BloodHook;
+import pw.rayz.echat.chat.hooks.implementations.DatingHook;
 
 import java.time.Instant;
 import java.util.*;
@@ -15,6 +18,7 @@ public class MessageFilter {
     private final JDABot bot;
     private final Map<Long, Instant> previousMessageInstants = new ConcurrentHashMap<>();
     private final Properties properties = new Properties();
+    private final Set<ChatHook> chatHooks = new HashSet<>();
     private List<String> bannedWords;
     private List<String> immuneRoles;
     private List<String> selfieChannels;
@@ -23,6 +27,7 @@ public class MessageFilter {
         this.bot = bot;
 
         bot.getEChat().getConfig().addLoadTask(this::loadConfig, true);
+        loadChatHooks();
     }
 
     private void loadConfig() {
@@ -36,6 +41,11 @@ public class MessageFilter {
         bannedWords = (List<String>) config.getField("banned_words", new ArrayList<>(), ArrayList.class, false);
         immuneRoles = (List<String>) config.getField("roles.message_filter_bypass", new ArrayList<>(), ArrayList.class, false);
         selfieChannels = (List<String>) config.getField("channels.selfies", new ArrayList<>(), ArrayList.class, false);
+    }
+
+    private void loadChatHooks() {
+        chatHooks.add(new BloodHook(bot));
+        chatHooks.add(new DatingHook(bot));
     }
 
     public void registerSentMessage(Member member) {
@@ -114,6 +124,25 @@ public class MessageFilter {
         }
 
         return null;
+    }
+
+    public void testForHooks(Message message) {
+        Member member = message.getMember();
+
+        if (member == null)
+            return;
+
+        String user = message.getMember().getEffectiveName();
+        chatHooks.forEach(h -> {
+            if (h.matches(message)) {
+                bot.getEChat().getLogger().info("Chat Hook tripped: " + h.getClass().getName() + " by: " + user);
+                h.messageCatch(message);
+            }
+        });
+    }
+
+    public Set<ChatHook> getChatHooks() {
+        return chatHooks;
     }
 
     public Properties getProperties() {

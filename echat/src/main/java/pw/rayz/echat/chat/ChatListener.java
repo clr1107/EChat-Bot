@@ -36,7 +36,7 @@ public class ChatListener extends ListenerAdapter {
         bot.getAfkHandler().taggedAFK(message);
     }
 
-    private boolean testMessage(Member member, Message message, TextChannel channel) {
+    private boolean applyMessageFilterPunishments(Member member, Message message, TextChannel channel) {
         Punishment punishment = null;
         MessageFilter filter = bot.getMessageFilter();
 
@@ -67,10 +67,9 @@ public class ChatListener extends ListenerAdapter {
         } else return true;
     }
 
-    @Override
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        Message message = event.getMessage();
-        Member member = event.getMember();
+    private void onMsg(Message message) {
+        Member member = message.getMember();
+        TextChannel channel = message.getTextChannel();
 
         if (!bot.isGuildChannel(message.getTextChannel()))
             return;
@@ -78,30 +77,21 @@ public class ChatListener extends ListenerAdapter {
         if (member == null || member.getUser().isBot())
             return;
 
-        if (!testMessage(event.getMember(), message, event.getChannel()))
-            message.delete().queue();
-        else {
+        if (applyMessageFilterPunishments(member, message, channel)) {
             testAFK(message);
+            bot.getMessageFilter().testForHooks(message);
             bot.getMessageFilter().registerSentMessage(member);
-        }
+        } else
+            message.delete().queue();
+    }
+
+    @Override
+    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+        onMsg(event.getMessage());
     }
 
     @Override
     public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
-        Message message = event.getMessage();
-        Member member = event.getMember();
-
-        if (!bot.isGuildChannel(message.getTextChannel()))
-            return;
-
-        if (member == null || member.getUser().isBot())
-            return;
-
-        if (!testMessage(event.getMember(), message, event.getChannel()))
-            message.delete().queue();
-        else {
-            testAFK(message);
-            bot.getMessageFilter().registerSentMessage(member);
-        }
+        onMsg(event.getMessage());
     }
 }

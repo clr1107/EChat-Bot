@@ -30,7 +30,7 @@ public class CommandHandler extends ListenerAdapter {
         if (member == null)
             return;
 
-        String msg = "Attempting to execute command: \"" + command.getName() + "\" for user displayed as: \"" + member.getEffectiveName() + "\"";
+        String msg = "user \"" + member.getEffectiveName() + "\" executing cmd: \"" + command.getName() + "\"";
         bot.getEChat().getLogger().info(msg);
 
         if (!command.hasPermission(commandExecution.getCause().getMember()))
