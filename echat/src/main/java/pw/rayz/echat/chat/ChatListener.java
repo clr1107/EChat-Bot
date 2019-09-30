@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import pw.rayz.echat.EChat;
 import pw.rayz.echat.JDABot;
+import pw.rayz.echat.chat.afk.AFKInstance;
 import pw.rayz.echat.punishment.Punishment;
 import pw.rayz.echat.punishment.implementations.IllegalChannelChatInfraction;
 import pw.rayz.echat.punishment.implementations.IllegalCharacterCountInfraction;
@@ -15,6 +16,7 @@ import pw.rayz.echat.punishment.implementations.IllegalWordInfraction;
 import pw.rayz.echat.punishment.implementations.SpamInfraction;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 public class ChatListener extends ListenerAdapter {
     private final JDABot bot;
@@ -23,17 +25,40 @@ public class ChatListener extends ListenerAdapter {
         this.bot = bot;
     }
 
-    private void testAFK(Message message) {
+    private void performAFKChecks(Message message) {
         JDABot bot = EChat.eChat().getBot();
         TextChannel channel = message.getTextChannel();
         Member member = message.getMember();
 
-        if (bot.getAfkHandler().getAFK(message.getMember()) != null) {
-            bot.getAfkHandler().removeAFK(channel, member);
+        if (member == null)
             return;
+
+        if (bot.getAfkHandler().isAFK(member)) {
+            bot.getAfkHandler().disableAFK(member);
+            channel.sendMessage("I have removed your AFK status, " + member.getEffectiveName()).queue();
+        }
+    }
+
+    private void replyTaggedAFKMembers(Message message) {
+        List<Member> mentioned = message.getMentionedMembers();
+        StringBuilder builder = new StringBuilder();
+
+        for (Member mentionedMember : mentioned) {
+            AFKInstance instance = bot.getAfkHandler().getAFKInstance(mentionedMember);
+
+            if (mentionedMember != null && instance != null) {
+                String msg = "%s is afk: %s (time: %s)";
+                msg = String.format(
+                        msg, mentionedMember.getEffectiveName(), instance.getReason(), instance.timeSinceAFK()
+                );
+
+                builder.append(msg).append(". ");
+            }
         }
 
-        bot.getAfkHandler().taggedAFK(message);
+        String msg = builder.toString();
+        if (!msg.isBlank())
+            message.getChannel().sendMessage(msg).queue();
     }
 
     private boolean applyMessageFilterPunishments(Member member, Message message, TextChannel channel) {
@@ -78,8 +103,10 @@ public class ChatListener extends ListenerAdapter {
             return;
 
         if (applyMessageFilterPunishments(member, message, channel)) {
-            testAFK(message);
+            performAFKChecks(message);
+            replyTaggedAFKMembers(message);
             bot.getMessageFilter().testForHooks(message);
+
             bot.getMessageFilter().registerSentMessage(member);
         } else
             message.delete().queue();

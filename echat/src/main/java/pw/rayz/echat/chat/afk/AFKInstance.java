@@ -1,18 +1,24 @@
 package pw.rayz.echat.chat.afk;
 
 import java.time.Instant;
+import java.time.LocalTime;
 
 public class AFKInstance {
     private final long id;
     private final Instant instant;
     private final String previousNickname;
-    private final String msg;
+    private final String reason;
 
-    public AFKInstance(long id, Instant instant, String previousNickname, String msg) {
+    public AFKInstance(long id, Instant instant, String previousNickname, String reason) {
         this.id = id;
         this.instant = instant;
         this.previousNickname = previousNickname;
-        this.msg = msg;
+        this.reason = reason;
+    }
+
+    public String timeSinceAFK() {
+        long seconds = (System.currentTimeMillis() - instant.toEpochMilli()) / 1000;
+        return LocalTime.MIN.plusSeconds(seconds).toString();
     }
 
     public long getId() {
@@ -27,7 +33,7 @@ public class AFKInstance {
         return previousNickname;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getReason() {
+        return reason;
     }
 }

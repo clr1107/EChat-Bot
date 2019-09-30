@@ -45,7 +45,7 @@ public final class EChat {
             else if (next.equals("reload"))
                 instance.config.load();
             else if (next.equalsIgnoreCase("ut")) {
-                long seconds = (System.currentTimeMillis() - instance.startup) / 1000;
+                long seconds = instance.millisSinceStartup() / 1000;
                 instance.logger.info("Uptime: " + LocalTime.MIN.plusSeconds(seconds).toString());
             } else instance.logger.info("Unknown command supplied, stop, reload, ut");
         }
@@ -83,10 +83,12 @@ public final class EChat {
     public void stop() {
         logger.info("Stopping EChat bot...");
 
-        bot.getJDA().shutdown();
+        bot.unload();
         executorService.shutdown();
 
+        this.running = false;
         logger.info("Stopped.");
+
         System.exit(0);
     }
 
@@ -102,6 +104,10 @@ public final class EChat {
         }
 
         return file;
+    }
+
+    public long millisSinceStartup() {
+        return (System.currentTimeMillis() - startup);
     }
 
     public Logger getLogger() {

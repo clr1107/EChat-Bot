@@ -1,36 +1,35 @@
 package pw.rayz.echat.chat.afk;
 
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import pw.rayz.echat.EChat;
+import pw.rayz.echat.JDABot;
 
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class AFKHandler {
+    private final Logger logger = Logger.getLogger("EChat-Bot");
     private final Set<AFKInstance> instances = new HashSet<>();
 
-    public void setAfk(TextChannel channel, Member member, String msg) {
-        AFKInstance instance = new AFKInstance(member.getIdLong(), Instant.now(), member.getEffectiveName(), msg);
+    public void enableAFK(Member member, String reason) {
+        disableAFK(member);
 
-        channel.sendMessage(member.getEffectiveName() + " is now afk: " + msg).queue();
+        AFKInstance instance = new AFKInstance(member.getIdLong(), Instant.now(), member.getEffectiveName(), reason);
+        instances.add(instance);
 
         try {
             member.modifyNickname("(AFK) " + member.getEffectiveName()).queue();
         } catch (PermissionException exception) {
-            EChat.eChat().getLogger().warning("Could not change the nickname of " + member.getEffectiveName());
+            logger.warning("Could not change nickname (setting afk) for: " + member.getEffectiveName());
         }
-
-        instances.add(instance);
     }
 
-    public void removeAFK(TextChannel channel, Member member) {
-        AFKInstance instance = getAFK(member);
+    public void disableAFK(Member member) {
+        AFKInstance instance = getAFKInstance(member);
 
         if (instance != null) {
             instances.remove(instance);
@@ -38,35 +37,30 @@ public class AFKHandler {
             try {
                 member.modifyNickname(instance.getPreviousNickname()).queue();
             } catch (PermissionException exception) {
-                EChat.eChat().getLogger().warning("Could not change the nickname of " + member.getEffectiveName());
+                logger.warning("Could not change nickname (removing afk) for: " + member.getEffectiveName());
             }
-
-            channel.sendMessage("I have removed your afk status, " + member.getEffectiveName()).queue();
         }
     }
 
-    public void taggedAFK(Message message) {
-        List<Member> mentioned = message.getMentionedMembers();
-        StringBuilder builder = new StringBuilder();
+    public void disableAllAFK() {
+        JDABot bot = EChat.eChat().getBot();
+        Guild guild = bot.getEChatGuild();
 
-        for (Member member : mentioned) {
-            AFKInstance instance = getAFK(member);
+        if (guild != null) {
+            for (AFKInstance instance : instances) {
+                long id = instance.getId();
+                Member member = guild.getMemberById(id);
 
-            if (instance != null) {
-                long seconds = (System.currentTimeMillis() - instance.getInstant().toEpochMilli()) / 1000;
-                String time = LocalTime.MIN.plusSeconds(seconds).toString();
-
-                String msg = member.getEffectiveName() + " is afk: " + instance.getMsg() + " (time: " + time + ")";
-                builder.append(msg).append(". ");
+                if (member != null) disableAFK(member);
             }
         }
-
-        String msg = builder.toString();
-        if (!msg.isBlank())
-            message.getChannel().sendMessage(msg).queue();
     }
 
-    public AFKInstance getAFK(Member member) {
+    public AFKInstance getAFKInstance(Member member) {
         return instances.stream().filter(a -> a.getId() == member.getIdLong()).findFirst().orElse(null);
+    }
+
+    public boolean isAFK(Member member) {
+        return getAFKInstance(member) != null;
     }
 }

@@ -135,7 +135,7 @@ public class MessageFilter {
         String user = message.getMember().getEffectiveName();
         chatHooks.forEach(h -> {
             if (h.matches(message)) {
-                bot.getEChat().getLogger().info("Chat Hook tripped: " + h.getClass().getName() + " by: " + user);
+                bot.getEChat().getLogger().info("Chat Hook " + h.getClass().getName() + " tripped by: " + user);
                 h.messageCatch(message);
             }
         });

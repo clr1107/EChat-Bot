@@ -11,6 +11,7 @@ import pw.rayz.echat.chat.MessageFilter;
 import pw.rayz.echat.chat.afk.AFKHandler;
 import pw.rayz.echat.commands.CommandHandler;
 import pw.rayz.echat.commands.implementation.AFKCommand;
+import pw.rayz.echat.commands.implementation.UptimeCommand;
 import pw.rayz.echat.listeners.PrivateMessageListener;
 
 import javax.security.auth.login.LoginException;
@@ -43,6 +44,13 @@ public final class JDABot {
         loadCommands();
     }
 
+    void unload() {
+        logger.info("Unloading JDABot");
+
+        afkHandler.disableAllAFK();
+        jda.shutdown();
+    }
+
     private void loadConfiguration() {
         guildId = eChat.getConfig().getString("guild_id", null, false);
         logChannelId = eChat.getConfig().getString("channels.log", null, false);
@@ -56,6 +64,7 @@ public final class JDABot {
 
     private void loadCommands() {
         commandHandler.registerCommand(new AFKCommand(this));
+        commandHandler.registerCommand(new UptimeCommand(this));
     }
 
     private JDA loadJDA(String token) {

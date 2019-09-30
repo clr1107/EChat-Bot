@@ -4,18 +4,22 @@ import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import pw.rayz.echat.Configuration;
+import pw.rayz.echat.EChat;
 import pw.rayz.echat.JDABot;
 import pw.rayz.echat.commands.CommandExecution;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AFKCommand extends AbstractCommand {
+public class UptimeCommand extends AbstractCommand {
     private final JDABot bot;
     private List<String> roles;
 
-    public AFKCommand(JDABot bot) {
-        super("afk", new String[]{"away"});
+    public UptimeCommand(JDABot bot) {
+        super("uptime", new String[]{
+                "ut", "utime", "up"
+        });
 
         this.bot = bot;
         bot.getEChat().getConfig().addLoadTask(this::loadConfig, true);
@@ -25,10 +29,6 @@ public class AFKCommand extends AbstractCommand {
         Configuration config = bot.getEChat().getConfig();
 
         this.roles = (List<String>) config.getField("roles.staff", new ArrayList<>(), ArrayList.class, false);
-    }
-
-    private void sendAFK(TextChannel channel, Member member, String msg) {
-        channel.sendMessage(member.getEffectiveName() + " is now afk: " + msg).queue();
     }
 
     @Override
@@ -47,18 +47,10 @@ public class AFKCommand extends AbstractCommand {
         commandExecution.getCause().getMessage().delete().queue();
         // if successful, remove their msg.
 
-        String msg = "AFK";
-        if (commandExecution.getArgs().length != 0) {
-            StringBuilder builder = new StringBuilder();
+        long seconds = EChat.eChat().millisSinceStartup() / 1000;
+        String msg = "Uptime: " + LocalTime.MIN.plusSeconds(seconds).toString();
 
-            for (String part : commandExecution.getArgs())
-                builder.append(part).append(" ");
-
-            msg = builder.toString();
-        }
-
-        bot.getAfkHandler().enableAFK(member, msg);
-        channel.sendMessage(member.getEffectiveName() + " is now afk: " + msg).queue();
+        channel.sendMessage(msg).queue();
     }
 
     @Override
