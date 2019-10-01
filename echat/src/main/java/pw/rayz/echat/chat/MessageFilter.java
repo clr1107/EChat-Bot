@@ -8,6 +8,7 @@ import pw.rayz.echat.JDABot;
 import pw.rayz.echat.chat.hooks.ChatHook;
 import pw.rayz.echat.chat.hooks.implementations.BloodHook;
 import pw.rayz.echat.chat.hooks.implementations.DatingHook;
+import pw.rayz.echat.chat.hooks.implementations.MockingHook;
 
 import java.time.Instant;
 import java.util.*;
@@ -46,6 +47,7 @@ public class MessageFilter {
     private void loadChatHooks() {
         chatHooks.add(new BloodHook(bot));
         chatHooks.add(new DatingHook(bot));
+        chatHooks.add(new MockingHook(bot));
     }
 
     public void registerSentMessage(Member member) {

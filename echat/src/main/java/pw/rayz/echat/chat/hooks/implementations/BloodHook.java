@@ -16,19 +16,20 @@ public class BloodHook implements ChatHook {
     }
 
     private void loadConfig() {
-        String emoteName = bot.getEChat().getConfig().getString("standard_messages.blood_gang_hook", false);
+        String emoteName = bot.getEChat().getConfig().getString("hooks.blood_emoji", false);
         emote = bot.getJDA().getEmotesByName(emoteName, true).stream().findFirst().orElse(null);
     }
 
     @Override
     public boolean matches(Message message) {
         String raw = message.getContentRaw().toLowerCase();
-        return raw.startsWith("blood gang");
+        return raw.startsWith("blood gang") || raw.startsWith("treyway");
     }
 
     @Override
     public void messageCatch(Message message) {
-        message.getChannel().sendMessage(emote.getAsMention()).queue();
+        if (emote != null)
+            message.getChannel().sendMessage(emote.getAsMention()).queue();
     }
 
 }
