@@ -1,5 +1,6 @@
 package pw.rayz.echat.commands.implementation;
 
+import org.jetbrains.annotations.NotNull;
 import pw.rayz.echat.commands.Command;
 
 public abstract class AbstractCommand implements Command {
@@ -11,11 +12,13 @@ public abstract class AbstractCommand implements Command {
         this.aliases = aliases != null ? aliases : new String[0];
     }
 
+    @NotNull
     @Override
     public String getName() {
         return name;
     }
 
+    @NotNull
     @Override
     public String[] getAliases() {
         return aliases;

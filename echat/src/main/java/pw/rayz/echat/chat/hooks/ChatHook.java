@@ -2,10 +2,12 @@ package pw.rayz.echat.chat.hooks;
 
 import net.dv8tion.jda.api.entities.Message;
 
+import javax.annotation.Nonnull;
+
 public interface ChatHook {
 
-    boolean matches(Message message);
+    boolean matches(@Nonnull Message message);
 
-    void messageCatch(Message message);
+    void executeHook(@Nonnull Message message);
 
 }

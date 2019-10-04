@@ -41,7 +41,7 @@ public class CommandHandler extends ListenerAdapter {
     }
 
     private Command matchCommand(String label) {
-        return commandSet.stream()
+        return commandSet.parallelStream()
                 .filter(c -> c.matchesName(label))
                 .findFirst()
                 .orElse(null);

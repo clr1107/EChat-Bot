@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 
+import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.*;
 
@@ -31,18 +32,35 @@ public class MessageLogger {
     MessageLogger() {
     }
 
-    public Instant lastMessage(Member member) {
+    /**
+     * Return the {@link Instant} of the last message this nonull {@link Member} sent.
+     *
+     * @param member {@link Member} to lookup.
+     * @return {@link Instant}.
+     */
+    public Instant lastMessage(@Nonnull Member member) {
         return userLatestMessages.get(member.getIdLong());
     }
 
-    public void registerDeletedMessage(long msgId) {
+    /**
+     * Log that a message with id {@code msgId} was deleted.
+     *
+     * @param msgId {@code long} msgId.
+     */
+    public void logDeletedMessage(long msgId) {
         if (!deletedMessageIds.offerFirst(msgId)) {
             deletedMessageIds.pop();
             deletedMessageIds.push(msgId);
         }
     }
 
-    public void registerSentMessage(Member member, Message message) {
+    /**
+     * Log that a message was sent by a {@link Member}.
+     *
+     * @param member  The member who sent the message
+     * @param message The message sent.
+     */
+    public void logSentMessage(@Nonnull Member member, @Nonnull Message message) {
         MessageInstance instance = new MessageInstance(
                 member.getIdLong(), message.getContentRaw(),
                 message.getIdLong(), message.getTextChannel(), Instant.now()

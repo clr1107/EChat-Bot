@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.jetbrains.annotations.NotNull;
 import pw.rayz.echat.JDABot;
 import pw.rayz.echat.chat.hooks.ChatHook;
 
@@ -38,8 +39,23 @@ public class MockingHook implements ChatHook {
         return newStr.toString();
     }
 
+    /**
+     * Return whether this message matches the hook. The conditions are:
+     * - check the member is not null
+     * - this feature is enabled
+     * - the length of their message is longer than just "/mocking/"
+     * - the message starts with "/mocking/"
+     *
+     * @param message {@link Message} to check.
+     * @return whether the message matches
+     */
     @Override
-    public boolean matches(Message message) {
+    public boolean matches(@NotNull Message message) {
+        Member member = message.getMember();
+
+        if (member == null)
+            return false;
+
         if (!enabled)
             return false;
 
@@ -47,8 +63,17 @@ public class MockingHook implements ChatHook {
         return raw.length() > MATCH.length() && raw.startsWith(MATCH);
     }
 
+    /**
+     * If the message matches the hook, do the following:
+     * - delete the original message
+     * - turn the message into a mocking string with SWitCHing capiTALs and add the
+     * "kaj" emoji at the end, if it's not null.
+     * - send this message to the channel.
+     *
+     * @param message matching {@link Message}
+     */
     @Override
-    public void messageCatch(Message message) {
+    public void executeHook(@NotNull Message message) {
         Member member = message.getMember();
         TextChannel channel = message.getTextChannel();
 

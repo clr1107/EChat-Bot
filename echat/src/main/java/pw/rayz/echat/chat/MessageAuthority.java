@@ -15,6 +15,7 @@ import pw.rayz.echat.chat.hooks.ChatHook;
 import pw.rayz.echat.chat.hooks.implementations.*;
 import pw.rayz.echat.punishment.Punishment;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +30,7 @@ public class MessageAuthority {
     private final Set<ChatHook> chatHooks = new HashSet<>();
     private List<String> immuneRoles;
 
-    public MessageAuthority(JDABot bot) {
+    public MessageAuthority(@Nonnull JDABot bot) {
         this.bot = bot;
         this.filters = new HashSet<>();
         this.logger = new MessageLogger();
@@ -46,6 +47,9 @@ public class MessageAuthority {
         immuneRoles = (List<String>) config.getField("roles.message_filter_bypass", new ArrayList<>(), ArrayList.class, false);
     }
 
+    /**
+     * Add all the message filters.
+     */
     private void loadFilters() {
         addFilter(new SpamFilter(this));
         addFilter(new IllegalChannelFilter(this));
@@ -53,6 +57,9 @@ public class MessageAuthority {
         addFilter(new IllegalCharacterCountFilter(this));
     }
 
+    /**
+     * Add all the chat hooks.
+     */
     private void loadChatHooks() {
         addChatHook(new BloodHook(bot));
         addChatHook(new DatingHook(bot));
@@ -61,8 +68,17 @@ public class MessageAuthority {
         addChatHook(new AFKMentionHook(bot));
     }
 
-    private boolean applyFilters(Message message) {
-        if (isImmune(message.getMember()))
+    /**
+     * Apply all the filters to a (nonnull) message. Once one filter
+     * has been triggered, no others are checked.
+     *
+     * @param message {@link Message} to check.
+     * @return whether any filters were triggered.
+     */
+    private boolean applyFilters(@Nonnull Message message) {
+        Member member = message.getMember();
+
+        if (member == null || isImmune(member))
             return false;
 
         return filters.parallelStream().anyMatch(filter -> {
@@ -71,6 +87,9 @@ public class MessageAuthority {
             if (punishment != null) {
                 punishment.send();
                 punishment.sendAudit();
+
+                String user = member.getEffectiveName();
+                bot.getEChat().getLogger().info("Filter " + punishment.getClass().getName() + " triggered by: " + user);
 
                 return true;
             }
@@ -89,7 +108,13 @@ public class MessageAuthority {
         bot.getEChat().getLogger().info("Added chat filter: " + filter.getClass().getName());
     }
 
-    public void executeHooks(Message message) {
+    /**
+     * Test all chat hooks on this {@link Message}. If a single hook is caught, the others are
+     * <b>also</b> still tested.
+     *
+     * @param message nonull {@link Message} to test.
+     */
+    public void executeHooks(@Nonnull Message message) {
         Member member = message.getMember();
 
         if (member == null)
@@ -100,25 +125,35 @@ public class MessageAuthority {
         chatHooks.parallelStream().forEach(h -> {
             if (h.matches(message)) {
                 bot.getEChat().getLogger().info("Chat Hook " + h.getClass().getName() + " tripped by: " + user);
-                h.messageCatch(message);
+                h.executeHook(message);
             }
         });
     }
 
-    public void userSendMessage(Message message) {
+    /**
+     * Register that a user sent a message. Then perform actions necessary.
+     *
+     * @param message {@link Message}.
+     */
+    public void registerUserSentMessage(@Nonnull Message message) {
         Member member = message.getMember();
 
         if (member == null)
             return;
 
         if (!applyFilters(message)) {
-            logger.registerSentMessage(member, message);
+            logger.logSentMessage(member, message);
             executeHooks(message);
         }
     }
 
-    public void userDeleteMessage(long msgId) {
-        logger.registerDeletedMessage(msgId);
+    /**
+     * Register that a user deleted a message. Then perform actions necessary.
+     *
+     * @param msgId the id relating to the original {@link Message}.
+     */
+    public void registerUserDeletedMessage(long msgId) {
+        logger.logDeletedMessage(msgId);
     }
 
     public boolean isImmune(Member member) {
