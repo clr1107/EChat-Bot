@@ -1,12 +1,12 @@
 package pw.rayz.echat;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import pw.rayz.echat.utils.logging.ConsoleLoggerFormatter;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.LocalTime;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,8 +45,8 @@ public final class EChat {
             else if (next.equals("reload"))
                 instance.config.load();
             else if (next.equalsIgnoreCase("ut")) {
-                long seconds = instance.millisSinceStartup() / 1000;
-                instance.logger.info("Uptime: " + LocalTime.MIN.plusSeconds(seconds).toString());
+                long seconds = instance.millisSinceStartup();
+                instance.logger.info("Uptime: " + DurationFormatUtils.formatDuration(seconds, "HH:mm:ss"));
             } else instance.logger.info("Unknown command supplied, stop, reload, ut");
         }
     }

@@ -1,5 +1,6 @@
 package pw.rayz.echat.chat.hooks.implementations;
 
+import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -54,8 +55,14 @@ public class MockingHook implements ChatHook {
         if (member != null) {
             message.delete().queue();
 
+            Emote emote = bot.getJDA().getEmotesByName("kaj", true).stream().findFirst().orElse(null);
             String rawMsg = message.getContentRaw().substring(MATCH.length());
-            String msg = String.format("**%s** - %s", member.getEffectiveName(), mockStr(rawMsg));
+            String msg = String.format(
+                    "**%s** - %s %s",
+                    member.getEffectiveName(),
+                    mockStr(rawMsg),
+                    emote != null ? emote.getAsMention() : ""
+            );
 
             channel.sendMessage(msg).queue();
         }

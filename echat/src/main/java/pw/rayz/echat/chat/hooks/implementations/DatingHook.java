@@ -20,7 +20,7 @@ public class DatingHook implements ChatHook {
 
     @Override
     public boolean matches(Message message) {
-        if (bot.getMessageFilter().isImmune(message.getMember())) // immune members can say "dating" & "server"
+        if (bot.getMessageAuthority().isImmune(message.getMember())) // immune members can say "dating" & "server"
             return false;
 
         String raw = message.getContentRaw().toLowerCase();

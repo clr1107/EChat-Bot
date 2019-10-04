@@ -6,12 +6,11 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pw.rayz.echat.chat.ChatListener;
-import pw.rayz.echat.chat.MessageFilter;
-import pw.rayz.echat.chat.afk.AFKHandler;
+import pw.rayz.echat.chat.MessageAuthority;
 import pw.rayz.echat.commands.CommandHandler;
 import pw.rayz.echat.commands.implementation.AFKCommand;
 import pw.rayz.echat.commands.implementation.UptimeCommand;
+import pw.rayz.echat.listeners.ChatListener;
 import pw.rayz.echat.listeners.PrivateMessageListener;
 
 import javax.security.auth.login.LoginException;
@@ -21,11 +20,10 @@ public final class JDABot {
     private final EChat eChat;
     private final Logger logger = Logger.getLogger("EChat-Bot");
     private JDA jda;
-    private MessageFilter messageFilter;
+    private MessageAuthority messageAuthority;
     private CommandHandler commandHandler;
     private String guildId;
     private String logChannelId;
-    private final AFKHandler afkHandler = new AFKHandler();
 
     JDABot(EChat eChat) {
         this.eChat = eChat;
@@ -37,7 +35,7 @@ public final class JDABot {
     void load() {
         logger.info("Calling JDABot#load - loading listeners & other necessary functions.");
 
-        messageFilter = new MessageFilter(this);
+        messageAuthority = new MessageAuthority(this);
         commandHandler = new CommandHandler(this);
 
         loadListeners();
@@ -47,7 +45,7 @@ public final class JDABot {
     void unload() {
         logger.info("Unloading JDABot");
 
-        afkHandler.disableAllAFK();
+        messageAuthority.getAFKHandler().disableAllAFK();
         jda.shutdown();
     }
 
@@ -57,7 +55,7 @@ public final class JDABot {
     }
 
     private void loadListeners() {
-        addListener(new ChatListener(this));
+        addListener(new ChatListener(messageAuthority));
         addListener(new PrivateMessageListener(this));
         addListener(commandHandler);
     }
@@ -140,8 +138,8 @@ public final class JDABot {
         else return null;
     }
 
-    public MessageFilter getMessageFilter() {
-        return messageFilter;
+    public MessageAuthority getMessageAuthority() {
+        return messageAuthority;
     }
 
     public EChat getEChat() {
@@ -158,9 +156,5 @@ public final class JDABot {
 
     public String getLogChannelId() {
         return logChannelId;
-    }
-
-    public AFKHandler getAfkHandler() {
-        return afkHandler;
     }
 }

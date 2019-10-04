@@ -3,12 +3,12 @@ package pw.rayz.echat.commands.implementation;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import pw.rayz.echat.Configuration;
 import pw.rayz.echat.EChat;
 import pw.rayz.echat.JDABot;
 import pw.rayz.echat.commands.CommandExecution;
 
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class UptimeCommand extends AbstractCommand {
         // if successful, remove their msg.
 
         long seconds = EChat.eChat().millisSinceStartup() / 1000;
-        String msg = "Uptime: " + LocalTime.MIN.plusSeconds(seconds).toString();
+        String msg = "Uptime: " + DurationFormatUtils.formatDuration(seconds, "HH:mm:ss");
 
         channel.sendMessage(msg).queue();
     }

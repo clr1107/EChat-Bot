@@ -57,7 +57,7 @@ public class AFKCommand extends AbstractCommand {
             msg = builder.toString();
         }
 
-        bot.getAfkHandler().enableAFK(member, msg);
+        bot.getMessageAuthority().getAFKHandler().enableAFK(member, msg);
         channel.sendMessage(member.getEffectiveName() + " is now afk: " + msg).queue();
     }
 
