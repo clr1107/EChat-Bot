@@ -44,11 +44,8 @@ public class UptimeCommand extends AbstractCommand {
         if (member == null)
             return;
 
-        commandExecution.getCause().getMessage().delete().queue();
-        // if successful, remove their msg.
-
-        long seconds = EChat.eChat().millisSinceStartup() / 1000;
-        String msg = "Uptime: " + DurationFormatUtils.formatDuration(seconds, "HH:mm:ss");
+        long milliseconds = EChat.eChat().millisSinceStartup();
+        String msg = "Uptime: " + DurationFormatUtils.formatDuration(milliseconds, "HH:mm:ss");
 
         channel.sendMessage(msg).queue();
     }

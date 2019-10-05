@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
 import pw.rayz.echat.JDABot;
 import pw.rayz.echat.chat.afk.AFKHandler;
+import pw.rayz.echat.chat.afk.AFKInstance;
 import pw.rayz.echat.chat.hooks.ChatHook;
 
 public class AFKHook implements ChatHook {
@@ -48,12 +49,15 @@ public class AFKHook implements ChatHook {
     public void executeHook(@NotNull Message message) {
         Member member = message.getMember();
         TextChannel channel = message.getTextChannel();
+        AFKHandler handler = bot.getMessageAuthority().getAFKHandler();
 
         if (member == null)
             return;
 
-        bot.getMessageAuthority().getAFKHandler().disableAFK(member);
-        channel.sendMessage(String.format(RESPONSE, member.getEffectiveName())).queue();
+        AFKInstance instance = handler.getAFKInstance(member);
+        handler.disableAFK(member);
+
+        channel.sendMessage(String.format(RESPONSE, instance.getPreviousNickname())).queue();
     }
 
 }

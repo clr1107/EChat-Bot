@@ -21,6 +21,7 @@ public class CommandHandler extends ListenerAdapter {
     }
 
     public void registerCommand(Command command) {
+        bot.getEChat().getLogger().info("Added command: " + command.getClass().getName());
         this.commandSet.add(command);
     }
 

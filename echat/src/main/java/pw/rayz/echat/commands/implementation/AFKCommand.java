@@ -44,9 +44,6 @@ public class AFKCommand extends AbstractCommand {
         if (member == null)
             return;
 
-        commandExecution.getCause().getMessage().delete().queue();
-        // if successful, remove their msg.
-
         String msg = "AFK";
         if (commandExecution.getArgs().length != 0) {
             StringBuilder builder = new StringBuilder();

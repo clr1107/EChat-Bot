@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import pw.rayz.echat.chat.MessageAuthority;
 import pw.rayz.echat.commands.CommandHandler;
 import pw.rayz.echat.commands.implementation.AFKCommand;
+import pw.rayz.echat.commands.implementation.RetrieveCommand;
 import pw.rayz.echat.commands.implementation.UptimeCommand;
 import pw.rayz.echat.listeners.ChatListener;
 import pw.rayz.echat.listeners.PrivateMessageListener;
@@ -40,6 +41,8 @@ public final class JDABot {
 
         loadListeners();
         loadCommands();
+
+        logger.info("Finished JDABot#load");
     }
 
     void unload() {
@@ -47,6 +50,8 @@ public final class JDABot {
 
         messageAuthority.getAFKHandler().disableAllAFK();
         jda.shutdown();
+
+        logger.info("Unloaded");
     }
 
     private void loadConfiguration() {
@@ -63,6 +68,7 @@ public final class JDABot {
     private void loadCommands() {
         commandHandler.registerCommand(new AFKCommand(this));
         commandHandler.registerCommand(new UptimeCommand(this));
+        commandHandler.registerCommand(new RetrieveCommand(this));
     }
 
     private JDA loadJDA(String token) {
@@ -71,6 +77,7 @@ public final class JDABot {
         try {
             jda = new JDABuilder(token)
                     .setAutoReconnect(true)
+                    .setActivity(Activity.of(Activity.ActivityType.LISTENING, "Jah"))
                     .build();
 
             jda.awaitReady();

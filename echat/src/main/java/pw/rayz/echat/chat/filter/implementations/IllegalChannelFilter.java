@@ -37,7 +37,7 @@ public class IllegalChannelFilter implements MessageFilter {
      */
     @Override
     public Punishment checkMessage(@NotNull Message message) {
-        if (message == null || message.getMember() == null)
+        if (!message.getAttachments().isEmpty() || message.getMember() == null)
             return null;
 
         String channelId = message.getTextChannel().getId();

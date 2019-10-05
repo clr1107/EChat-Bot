@@ -31,7 +31,6 @@ public final class EChat {
     public static void main(String[] args) {
         instance.setupLogger();
 
-        instance.logger.info("Starting up...");
         instance.load();
         instance.startup = System.currentTimeMillis();
 
@@ -45,8 +44,8 @@ public final class EChat {
             else if (next.equals("reload"))
                 instance.config.load();
             else if (next.equalsIgnoreCase("ut")) {
-                long seconds = instance.millisSinceStartup();
-                instance.logger.info("Uptime: " + DurationFormatUtils.formatDuration(seconds, "HH:mm:ss"));
+                long milliseconds = instance.millisSinceStartup();
+                instance.logger.info("Uptime: " + DurationFormatUtils.formatDuration(milliseconds, "HH:mm:ss"));
             } else instance.logger.info("Unknown command supplied, stop, reload, ut");
         }
     }
@@ -72,12 +71,16 @@ public final class EChat {
     }
 
     private void load() {
+        logger.info("Starting up...");
+
         this.running = true;
         this.executorService = Executors.newFixedThreadPool(4);
         this.config = new Configuration("config.json");
 
         this.bot = new JDABot(this);
         bot.load();
+
+        logger.info("Started up!");
     }
 
     public void stop() {
