@@ -11,11 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CircularStack<T> extends AbstractCollection<T> {
     private final int size;
     private final T[] objects;
-    private final AtomicInteger head = new AtomicInteger(0);
+    private final AtomicInteger head;
 
     public CircularStack(int size) {
         this.size = size;
         this.objects = (T[]) new Object[size];
+        this.head = new AtomicInteger(0);
     }
 
     public CircularStack(Collection<T> collection) {
@@ -25,7 +26,8 @@ public class CircularStack<T> extends AbstractCollection<T> {
 
     public CircularStack(CircularStack<T> stack) {
         this.size = stack.size;
-        this.objects = stack.objects;
+        this.objects = arrayCopy(stack.objects);
+        this.head = new AtomicInteger(stack.head.get());
     }
 
     public static final class CircularStackIterator<T> implements Iterator<T> {
@@ -45,6 +47,13 @@ public class CircularStack<T> extends AbstractCollection<T> {
         public T next() {
             return (T) objects[pointer++];
         }
+    }
+
+    private static <E> E[] arrayCopy(E[] array) {
+        E[] newArray = (E[]) new Object[array.length];
+        System.arraycopy(array, 0, newArray, 0, array.length);
+
+        return newArray;
     }
 
     public void push(@Nonnull T t) {
