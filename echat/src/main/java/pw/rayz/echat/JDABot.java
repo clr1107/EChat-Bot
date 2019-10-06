@@ -13,6 +13,8 @@ import pw.rayz.echat.commands.implementation.RetrieveCommand;
 import pw.rayz.echat.commands.implementation.UptimeCommand;
 import pw.rayz.echat.listeners.ChatListener;
 import pw.rayz.echat.listeners.PrivateMessageListener;
+import pw.rayz.echat.urbandictionary.UrbanDictionary;
+import pw.rayz.echat.urbandictionary.commands.DefineCommand;
 
 import javax.security.auth.login.LoginException;
 import java.util.logging.Logger;
@@ -23,6 +25,7 @@ public final class JDABot {
     private JDA jda;
     private MessageAuthority messageAuthority;
     private CommandHandler commandHandler;
+    private UrbanDictionary dictionary;
     private String guildId;
     private String logChannelId;
 
@@ -38,6 +41,7 @@ public final class JDABot {
 
         messageAuthority = new MessageAuthority(this);
         commandHandler = new CommandHandler(this);
+        dictionary = new UrbanDictionary(this);
 
         loadListeners();
         loadCommands();
@@ -69,6 +73,7 @@ public final class JDABot {
         commandHandler.registerCommand(new AFKCommand(this));
         commandHandler.registerCommand(new UptimeCommand(this));
         commandHandler.registerCommand(new RetrieveCommand(this));
+        commandHandler.registerCommand(new DefineCommand(this));
     }
 
     private JDA loadJDA(String token) {
@@ -147,6 +152,10 @@ public final class JDABot {
 
     public MessageAuthority getMessageAuthority() {
         return messageAuthority;
+    }
+
+    public UrbanDictionary getDictionary() {
+        return dictionary;
     }
 
     public EChat getEChat() {

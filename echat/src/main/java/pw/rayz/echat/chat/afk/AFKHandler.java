@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -64,19 +63,16 @@ public class AFKHandler {
         Guild guild = bot.getEChatGuild();
 
         if (guild != null) {
+            Set<Member> members = new HashSet<>();
             for (AFKInstance instance : instances) {
-
-            }
-
-            Iterator<AFKInstance> it = instances.iterator();
-            while (it.hasNext()) {
-                AFKInstance instance = it.next();
-
                 long id = instance.getId();
                 Member member = guild.getMemberById(id);
 
-                if (member != null) disableAFK(member);
+                if (member != null)
+                    members.add(member);
             }
+
+            members.forEach(this::disableAFK);
         }
     }
 

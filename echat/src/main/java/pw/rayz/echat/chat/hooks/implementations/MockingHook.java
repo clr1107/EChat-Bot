@@ -82,7 +82,7 @@ public class MockingHook implements ChatHook {
 
             Emote emote = bot.getJDA().getEmotesByName("kaj", true).stream().findFirst().orElse(null);
             String rawMsg = message.getContentRaw().substring(MATCH.length());
-            String msg = String.format(
+            String msg = ">>> " + String.format(
                     "**%s** - %s %s",
                     member.getEffectiveName(),
                     mockStr(rawMsg),
