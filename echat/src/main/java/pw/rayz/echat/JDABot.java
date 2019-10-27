@@ -10,6 +10,7 @@ import pw.rayz.echat.chat.MessageAuthority;
 import pw.rayz.echat.commands.CommandHandler;
 import pw.rayz.echat.commands.implementation.AFKCommand;
 import pw.rayz.echat.commands.implementation.RetrieveCommand;
+import pw.rayz.echat.commands.implementation.StopCommand;
 import pw.rayz.echat.commands.implementation.UptimeCommand;
 import pw.rayz.echat.listeners.ChatListener;
 import pw.rayz.echat.listeners.PrivateMessageListener;
@@ -74,6 +75,7 @@ public final class JDABot {
         commandHandler.registerCommand(new UptimeCommand(this));
         commandHandler.registerCommand(new RetrieveCommand(this));
         commandHandler.registerCommand(new DefineCommand(this));
+        commandHandler.registerCommand(new StopCommand(this));
     }
 
     private JDA loadJDA(String token) {

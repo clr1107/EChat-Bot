@@ -17,7 +17,7 @@ public final class UrbanResponse {
 
     public String getDefinition() {
         definition = truncate(definition);
-        return definition;
+        return definition.replace("[", "").replace("]", "");
     }
 
     public String getWord() {

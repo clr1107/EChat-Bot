@@ -4,6 +4,7 @@ import okhttp3.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.logging.Logger;
 
 public class Requester {
     private static final String ENDPOINT = "https://api.urbandictionary.com/v0/";
@@ -14,6 +15,7 @@ public class Requester {
     }
 
     public boolean defineTerm(String term, Callback callback) {
+        Logger.getLogger("EChat-Bot").info("Requesting UrbanDictionary api, term: \"" + term + "\"");
         HttpUrl url = assembleUrl(term);
 
         if (url != null) {

@@ -35,7 +35,7 @@ public class DefineCommand extends AbstractCommand {
         Instant previous = pastUse.get(member.getIdLong());
         boolean immune = bot.getMessageAuthority().isImmune(member);
 
-        if (!immune && previous.plusMillis(delay).isAfter(Instant.now())) {
+        if (!immune && previous != null && previous.plusMillis(delay).isAfter(Instant.now())) {
             member.getUser().openPrivateChannel().queue((channel) -> {
                 channel.sendMessage(
                         "Please wait at least " + (delay / 1000) + " seconds before doing that again!"
@@ -84,7 +84,16 @@ public class DefineCommand extends AbstractCommand {
 
     @Override
     public void invalidPermission(CommandExecution commandExecution) {
-        // all can do it.
+        Message message = commandExecution.getCause().getMessage();
+        Member member = message.getMember();
+
+        message.delete().queue();
+
+        if (member != null) {
+            member.getUser().openPrivateChannel().queue((channel) -> {
+                channel.sendMessage("You cannot do this right now.").queue();
+            });
+        }
     }
 
     @Override

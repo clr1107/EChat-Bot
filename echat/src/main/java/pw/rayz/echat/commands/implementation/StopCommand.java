@@ -2,8 +2,8 @@ package pw.rayz.echat.commands.implementation;
 
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
-import org.apache.commons.lang3.time.DurationFormatUtils;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import pw.rayz.echat.Configuration;
 import pw.rayz.echat.EChat;
 import pw.rayz.echat.JDABot;
@@ -11,15 +11,14 @@ import pw.rayz.echat.commands.CommandExecution;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
-public class UptimeCommand extends AbstractCommand {
+public class StopCommand extends AbstractCommand {
     private final JDABot bot;
     private List<String> roles;
 
-    public UptimeCommand(JDABot bot) {
-        super("uptime", new String[]{
-                "ut", "utime", "up"
-        });
+    public StopCommand(JDABot bot) {
+        super("stop", new String[]{});
 
         this.bot = bot;
         bot.getEChat().getConfig().addLoadTask(this::loadConfig, true);
@@ -31,6 +30,13 @@ public class UptimeCommand extends AbstractCommand {
         this.roles = (List<String>) config.getField("roles.staff", new ArrayList<>(), ArrayList.class, false);
     }
 
+    private void stop(User user) {
+        Logger logger = Logger.getLogger("EChat-Bot");
+        logger.warning(user.getAsTag() + " has issued the stop command!!!");
+
+        EChat.eChat().stop();
+    }
+
     @Override
     public boolean hasPermission(Member member) {
         return member.getRoles().stream().map(ISnowflake::getId).anyMatch(r -> roles.contains(r));
@@ -39,15 +45,17 @@ public class UptimeCommand extends AbstractCommand {
     @Override
     public void execute(CommandExecution commandExecution) {
         Member member = commandExecution.getCause().getMember();
-        TextChannel channel = commandExecution.getCause().getChannel();
+        Message message = commandExecution.getCause().getMessage();
 
         if (member == null)
             return;
 
-        long milliseconds = EChat.eChat().millisSinceStartup();
-        String msg = "Uptime: " + DurationFormatUtils.formatDuration(milliseconds, "HH:mm:ss");
+        member.getUser().openPrivateChannel().queue((c) -> {
+            c.sendMessage("Stopping the bot.").queue();
+        });
 
-        channel.sendMessage(msg).queue();
+        message.delete().queue();
+        stop(member.getUser());
     }
 
     @Override
@@ -59,7 +67,7 @@ public class UptimeCommand extends AbstractCommand {
         commandExecution.getCause().getMessage().delete().queue();
 
         member.getUser().openPrivateChannel().queue((channel) -> {
-            channel.sendMessage("You don't have permission to retrieve the uptime.").queue();
+            channel.sendMessage("You don't have permission to stop the server.").queue();
         });
     }
 
